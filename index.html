@@ -2,308 +2,457 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Radar Ultra Pro - Version 5.0.1 (Enterprise Matrix)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Radar Ultra Pro - Version 5.1.0 (Enterprise Matrix)</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
         /* ================================================================
            CORE SYSTEM VARIABLES - MATRIX V8 ARCHITECTURE
            ================================================================
-           Authoritative design tokens for the Enterprise Grid UI.
+           Design tokens autoritativos para a interface de nível empresarial.
+           Calculados para renderização de alta fidelidade em displays Retina.
         */
         :root { 
+            /* Light Palette Base */
             --bg-ui: #f2f2f7; 
             --text-main: #000000; 
             --item-bg: #ffffff; 
             --border-color: rgba(60, 60, 67, 0.29); 
             --accent: #007aff; 
             --blur-bg: rgba(255, 255, 255, 0.75); 
+            
+            /* System Status Colors */
             --ios-red: #ff3b30;
             --ios-green: #34c759;
+            --ios-orange: #ff9500;
             --ios-gray: #8e8e93;
+            --matrix-blue: #0a84ff;
+            
+            /* Layout Constants */
             --safe-area-bottom: env(safe-area-inset-bottom);
             --transition-main: all 0.500000s cubic-bezier(0.16, 1, 0.3, 1);
+            --transition-elastic: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             --shadow-ios: 0 15px 35px rgba(0,0,0,0.200000);
-            --matrix-glow: 0 0 15px rgba(10, 132, 255, 0.300000);
+            --shadow-glow: 0 0 20px rgba(10, 132, 255, 0.35);
+            
+            /* Typography & Depth */
             --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
             --layer-map: 5;
             --layer-fab: 50000;
+            --layer-overlays: 90000;
             --layer-auth: 600000;
-            --layer-ui-max: 950000;
-            --radius-extreme: 50px;
+            --layer-system-max: 2000000;
+            --radius-extreme: 38px;
+            --radius-standard: 24px;
         }
 
-        /* STEALTH MODE CONFIGURATION (DARK UI) */
+        /* STEALTH MODE OVERRIDE (DARK UI) 
+           Ativado dinamicamente via script de preferência do sistema.
+        */
         body.dark-mode { 
             --bg-ui: #000000; 
             --text-main: #ffffff; 
             --item-bg: #1c1c1e; 
             --border-color: rgba(84, 84, 88, 0.650000); 
             --accent: #0a84ff; 
-            --blur-bg: rgba(28, 28, 30, 0.750000); 
+            --blur-bg: rgba(28, 28, 30, 0.850000); 
         }
 
-        /* BASE BODY RESET */
+        /* BASE BODY RESET & BLOCKING 
+           Previne scroll indesejado e garante imersão total no mapa.
+        */
         body { 
-            margin: 0; padding: 0;
+            margin: 0; 
+            padding: 0;
             font-family: var(--font-stack); 
             overflow: hidden; 
             background: var(--bg-ui); 
             color: var(--text-main); 
             -webkit-font-smoothing: antialiased; 
-            height: 100vh; width: 100vw;
-            position: fixed; touch-action: none; user-select: none;
+            -moz-osx-font-smoothing: grayscale;
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        /* GEOSPATIAL RENDERING ENGINE LAYER */
+        /* GEOSPATIAL RENDERING CANVAS 
+           Camada primária do mapa Leaflet.
+        */
         #map { 
-            height: 100vh; width: 100%; 
+            height: 100.000000%; 
+            width: 100.000000%; 
             z-index: var(--layer-map); 
-            position: absolute; top: 0; left: 0;
-            background: #111111;
-            transition: filter 0.8s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #0f0f0f;
+            transition: filter 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* SYSTEM BANNER (IOS STYLE) */
+        /* SYSTEM NOTIFICATION BANNER 
+           Design flutuante estilo Dynamic Island do iOS.
+        */
         #ios-banner-system {
-            position: fixed; top: -220px; left: 50%;
-            transform: translateX(-50%); width: 90%; max-width: 440px;
-            background: var(--blur-bg); backdrop-filter: blur(45px) saturate(210%);
-            -webkit-backdrop-filter: blur(45px) saturate(210%);
-            border: 0.5px solid var(--border-color); padding: 22px 26px;
-            border-radius: 38px; z-index: 2000000; display: flex;
-            align-items: center; gap: 20px; box-shadow: var(--shadow-ios);
-            transition: var(--transition-main); pointer-events: none;
+            position: fixed;
+            top: -250px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 480px;
+            background: var(--blur-bg);
+            backdrop-filter: blur(50px) saturate(210%) brightness(1.1);
+            -webkit-backdrop-filter: blur(50px) saturate(210%) brightness(1.1);
+            border: 0.5px solid var(--border-color);
+            padding: 24px 28px;
+            border-radius: 40px;
+            z-index: var(--layer-system-max);
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+            transition: var(--transition-main);
+            pointer-events: none;
         }
 
-        #ios-banner-system.active { top: 45px; pointer-events: auto; }
+        #ios-banner-system.active {
+            top: 50px;
+            pointer-events: auto;
+        }
 
         .banner-icon {
-            width: 52px; height: 52px; border-radius: 16px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 26px; flex-shrink: 0; box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            background: var(--accent);
+            color: white;
         }
 
-        /* PROCEDURAL LOADERS */
-        .loader-inline { 
-            width: 36px; height: 36px; 
-            border: 5px solid var(--border-color); border-bottom-color: var(--accent); 
-            border-radius: 50%; display: inline-block; 
-            animation: matrixRotation 1.1s linear infinite; 
-        }
-        @keyframes matrixRotation { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
+        /* LOADERS & ANIMATIONS 
+           Feedback visual para operações de rede e grid.
+        */
+        .loader-main {
+            width: 42px;
+            height: 42px;
+            border: 4px solid var(--border-color);
+            border-bottom-color: var(--accent);
+            border-radius: 50%;
+            display: inline-block;
+            animation: rotation 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
         }
 
-        /* SIGNAL BADGES */
-        .badge { 
-            padding: 9px 15px; border-radius: 13px; font-size: 11px; 
-            font-weight: 900; color: white; text-transform: uppercase; 
-            letter-spacing: 0.9px; display: inline-block;
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-        .bg-5g { background: linear-gradient(135deg, #5856d6, #007aff); }
-        .bg-4g { background: var(--ios-green); }
-        
-        /* FULL-SCREEN OVERLAYS */
+
+        /* FULL-SCREEN OVERLAY ABSTRACTION 
+           Sistema de painéis para Configurações, Pesquisa e Inteligência.
+        */
         .full-overlay { 
-            position: fixed; inset: 0; background: var(--bg-ui); 
-            z-index: 95000; display: none; flex-direction: column; 
-            padding: 70px 40px; box-sizing: border-box; overflow-y: auto;
-            opacity: 0; transform: scale(1.1);
-            transition: all 0.6s cubic-bezier(0.2, 0.9, 0.2, 1);
+            position: fixed; 
+            inset: 0; 
+            background: var(--bg-ui); 
+            z-index: var(--layer-overlays); 
+            display: none; 
+            flex-direction: column; 
+            padding: 80px 45px; 
+            box-sizing: border-box;
+            overflow-y: auto;
+            opacity: 0;
+            transform: scale(1.15);
+            transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
         }
-        .full-overlay.active { display: flex; opacity: 1; transform: scale(1); }
 
-        /* FLOATING INTERFACE COMMANDS (FAB) */
+        .full-overlay.active {
+            display: flex;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* FLOATING ACTION BUTTONS (FAB) 
+           Controles de hardware virtual para navegação tática.
+        */
         .fab { 
-            position: absolute; width: 72px; height: 72px; 
-            border-radius: 26px; border: none; cursor: pointer; 
-            display: flex; align-items: center; justify-content: center; 
-            box-shadow: 0 18px 45px rgba(0,0,0,0.4); 
-            z-index: var(--layer-fab); background: var(--blur-bg);
-            backdrop-filter: blur(28px) saturate(190%);
-            -webkit-backdrop-filter: blur(28px) saturate(190%);
-            transition: all 0.4s cubic-bezier(0.2, 1, 0.3, 1.2); 
-            font-size: 28px; color: var(--text-main);
-            border: 1.2px solid var(--border-color);
+            position: absolute; 
+            width: 74px; 
+            height: 74px; 
+            border-radius: 28px; 
+            border: none; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.35); 
+            z-index: var(--layer-fab); 
+            background: var(--blur-bg);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            transition: var(--transition-elastic); 
+            font-size: 30px;
+            color: var(--text-main);
+            border: 1.5px solid var(--border-color);
         }
-        .btn-search { bottom: 100px; right: 40px; background: var(--accent); color: white; }
+        
+        .fab:hover { transform: scale(1.08) translateY(-4px); }
+        .fab:active { transform: scale(0.9) rotate(-10deg); }
+        
+        .btn-search { bottom: 100px; right: 40px; background: var(--accent); color: white; border: none; }
         .btn-config { bottom: 100px; left: 40px; }
-        .btn-locate { bottom: 195px; right: 40px; }
-        .btn-locate.active { background: var(--ios-green); color: white; animation: pulse-gps 2s infinite; }
+        .btn-locate { bottom: 200px; right: 40px; }
+        
+        .btn-locate.active { 
+            background: var(--ios-green); 
+            color: white; 
+            animation: pulse-gps-active 2s infinite;
+        }
 
-        @keyframes pulse-gps {
+        @keyframes pulse-gps-active {
             0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.7); }
-            70% { box-shadow: 0 0 0 25px rgba(52, 199, 89, 0); }
+            70% { box-shadow: 0 0 0 30px rgba(52, 199, 89, 0); }
             100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
         }
 
-        /* INTELLIGENCE HUB (CHAT SHEET) */
+        /* INTELLIGENCE SHEET (BOTTOM PANEL) 
+           Painel deslizante para análise de nodos e transmissão de relatórios.
+        */
         #comment-panel { 
-            position: fixed; inset: 0; z-index: 120000; 
-            pointer-events: none; display: flex; 
-            flex-direction: column; justify-content: flex-end; 
+            position: fixed; 
+            inset: 0; 
+            z-index: 120000; 
+            pointer-events: none; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: flex-end; 
         }
+
         .chat-sheet { 
-            background: var(--bg-ui); width: 100%; height: 90vh; 
-            border-radius: 50px 50px 0 0; display: flex; flex-direction: column; 
-            transform: translateY(100%); transition: transform 0.85s cubic-bezier(0.2, 1, 0.2, 1); 
-            pointer-events: auto; box-shadow: 0 -30px 80px rgba(0,0,0,0.55); 
-            overflow: hidden; border-top: 1.5px solid var(--border-color);
+            background: var(--bg-ui); 
+            width: 100%; 
+            height: 88vh; 
+            border-radius: 55px 55px 0 0; 
+            display: flex; 
+            flex-direction: column; 
+            transform: translateY(100%); 
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); 
+            pointer-events: auto; 
+            box-shadow: 0 -35px 90px rgba(0,0,0,0.6); 
+            border-top: 1px solid var(--border-color);
         }
+
         #comment-panel.active { pointer-events: auto; }
         #comment-panel.active .chat-sheet { transform: translateY(0); }
 
         .comm-item { 
-            background: var(--item-bg); padding: 24px; border-radius: 30px; 
-            margin-bottom: 20px; display: flex; gap: 20px; align-items: flex-start;
-            border: 0.8px solid var(--border-color); box-shadow: 0 6px 22px rgba(0,0,0,0.07);
-            animation: iosEntry 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            background: var(--item-bg); 
+            padding: 26px; 
+            border-radius: 32px; 
+            margin-bottom: 22px; 
+            display: flex; 
+            gap: 22px; 
+            align-items: flex-start;
+            border: 1px solid var(--border-color); 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+            animation: slideInUp 0.65s cubic-bezier(0.2, 1, 0.3, 1);
         }
-        @keyframes iosEntry { from { opacity: 0; transform: translateY(35px); } to { opacity: 1; transform: translateY(0); } }
 
-        .comm-avatar { width: 58px; height: 58px; border-radius: 50%; border: 3.5px solid var(--accent); object-fit: cover; }
-        .comm-user { font-weight: 800; font-size: 16px; color: var(--accent); margin-bottom: 6px; }
-        .comm-txt { font-size: 17px; color: var(--text-main); line-height: 1.6; }
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .comm-avatar { 
+            width: 62px; 
+            height: 62px; 
+            border-radius: 50%; 
+            border: 3px solid var(--accent); 
+            object-fit: cover; 
+            background: #d1d1d6;
+            flex-shrink: 0;
+        }
+
+        .comm-content { flex: 1; }
+        .comm-user { font-weight: 800; font-size: 17px; color: var(--accent); margin-bottom: 4px; }
+        .comm-txt { font-size: 18px; color: var(--text-main); line-height: 1.5; font-weight: 400; }
         
         .comm-input-area { 
-            padding: 22px 28px calc(35px + var(--safe-area-bottom)); 
-            border-top: 1.2px solid var(--border-color); display: flex; 
-            gap: 18px; background: var(--blur-bg); backdrop-filter: blur(28px); 
+            padding: 24px 30px calc(40px + var(--safe-area-bottom)); 
+            border-top: 1.5px solid var(--border-color); 
+            display: flex; 
+            gap: 20px; 
+            background: var(--blur-bg); 
+            backdrop-filter: blur(35px); 
+            align-items: center; 
         }
 
-        /* AUTH PORTAL DESIGN - DEFINITIVE FIX */
+        /* SECURE GATEKEEPER (AUTHENTICATION) 
+           Design de transição para o portal de acesso.
+        */
         #auth-overlay { 
-            position: fixed; inset: 0; background: var(--bg-ui); 
-            z-index: 600000; display: flex; justify-content: center; 
-            align-items: center; transition: opacity 1s, visibility 1s;
-            pointer-events: auto; visibility: visible;
+            position: fixed; 
+            inset: 0; 
+            background: var(--bg-ui); 
+            z-index: var(--layer-auth); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s ease;
+            pointer-events: auto;
+            visibility: visible;
         }
+
         .portal-container { 
-            background: var(--item-bg); padding: 55px 45px; border-radius: 50px; 
-            text-align: center; width: 90%; max-width: 420px; 
-            border: 1.5px solid var(--border-color); box-shadow: 0 45px 120px rgba(0,0,0,0.3); 
-        }    
+            background: var(--item-bg); 
+            padding: 60px 48px; 
+            border-radius: 55px; 
+            text-align: center; 
+            width: 90%; 
+            max-width: 440px; 
+            border: 2px solid var(--border-color); 
+            box-shadow: 0 50px 130px rgba(0,0,0,0.35); 
+        }
 
         .google-btn { 
-            background: var(--text-main); color: var(--bg-ui); border: none; 
-            padding: 24px; border-radius: 24px; width: 100%; font-weight: 800; 
-            display: flex; align-items: center; justify-content: center; gap: 16px; 
-            cursor: pointer; margin-top: 45px; font-size: 19px;
-        }
-        
-        /* SECURITY ALERT */
-        #security-alert { 
-            position: fixed; inset: 0; background: rgba(0,0,0,0.94); 
-            z-index: 900000; display: none; justify-content: center; 
-            align-items: center; padding: 40px; backdrop-filter: blur(15px); 
-        }
-        .alert-box { 
-            background: var(--item-bg); padding: 45px; border-radius: 45px; 
-            max-width: 550px; border: 2.5px solid var(--ios-red); 
+            background: var(--text-main); 
+            color: var(--bg-ui); 
+            border: none; 
+            padding: 26px; 
+            border-radius: 26px; 
+            width: 100%; 
+            font-weight: 800; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 18px; 
+            cursor: pointer; 
+            margin-top: 50px; 
+            transition: transform 0.3s, filter 0.3s; 
+            font-size: 20px;
         }
 
-        .result-card {
-            background: var(--item-bg); padding: 26px; border-radius: 28px; 
-            margin-bottom: 20px; display: flex; justify-content: space-between; 
-            align-items: center; border: 1px solid var(--border-color); cursor: pointer;
-        }
-    </style>
+        .google-btn:active { transform: scale(0.95); opacity: 0.8; }
+            </style>
 </head>
 <body class="dark-mode">
     <div id="ios-banner-system">
         <div id="banner-icon-box" class="banner-icon">📡</div>
         <div style="flex: 1.0;">
-            <b id="banner-title" style="display: block; font-size: 19px; letter-spacing: -0.7px;">Radar Ultra pro</b>
-            <span id="banner-msg" style="font-size: 16px; opacity: 0.8;">Initializing secure grid...</span>
+            <b id="banner-title" style="display: block; font-size: 19px; letter-spacing: -0.7px;">Radar Ultra Pro</b>
+            <span id="banner-msg" style="font-size: 16px; opacity: 0.8;">Iniciando rede segura...</span>
         </div>
     </div>
 
     <div id="auth-overlay">
         <div id="login-portal" class="portal-container">
-            <div style="font-size: 100px; margin-bottom: 40px; filter: drop-shadow(0 18px 30px rgba(0,122,255,0.45));">📡</div>
-            <h2 style="font-size: 36px; font-weight: 900; margin: 0 0 15px 0; letter-spacing: -1.8px;">Radar Ultra Pro</h2>
-            <p style="font-size: 18px; opacity: 0.6; line-height: 1.7; padding: 0 20px;">Log in to unlock features like commenting on comments and viewing towers</p>
+            <div style="font-size: 100px; margin-bottom: 45px; filter: drop-shadow(0 20px 35px rgba(0,122,255,0.45));">📡</div>
+            <h2 style="font-size: 38px; font-weight: 900; margin: 0 0 15px 0; letter-spacing: -1.8px;">Radar Ultra Pro</h2>
+            <p style="font-size: 19px; opacity: 0.6; line-height: 1.7; padding: 0 25px;">Acesse a rede criptografada para visualizar nodos e reportar inteligência em tempo real.</p>
             
             <button class="google-btn" id="main-login-trigger" onclick="loginWithGoogle()">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width:28px;">
-                Sign in with Google
+                Entrar com Google Cloud
             </button>
-            <p style="font-size: 15px; margin-top: 45px; opacity: 0.5;">
-                By continuing, you agree to the <span style="color:var(--accent); font-weight:700; cursor:pointer" onclick="toggleToS(true)">Terms of service</span>
+            
+            <p style="font-size: 15px; margin-top: 50px; opacity: 0.5;">
+                Ao entrar, você aceita os <span style="color:var(--accent); font-weight:700; cursor:pointer" onclick="toggleToS(true)">Protocolos de Uso</span>
             </p>
         </div>
 
         <div id="tos-portal" class="portal-container" style="display:none; text-align:left;">
-            <h3 style="margin-top:0; font-size: 30px; letter-spacing: -1.2px;">Usage Protocol</h3>
-            <div style="font-size:16px; line-height:1.9; max-height: 380px; overflow-y: auto; opacity: 0.9;">
-                <p><b>1. Location:</b> Your GPS data is client-side only and never stored in our logs.</p>
-                <p><b>2. Identity:</b> Profile data is managed via Google Firebase Enterprise encryption.</p>
-                <p><b>3. Integrity:</b> Malicious node reporting results in permanent credential revocation.</p>
-                <p><b>4. Security:</b> Automated grid scanning is prohibited outside this client.</p>
+            <h3 style="margin-top:0; font-size: 32px; letter-spacing: -1.2px;">Protocolo de Uso</h3>
+            <div style="font-size:16px; line-height:1.9; max-height: 400px; overflow-y: auto; opacity: 0.9; padding-right: 10px;">
+                <p><b>1. Geolocalização:</b> Seus dados de GPS são processados localmente e nunca armazenados em nossos servidores de logs permanentes.</p>
+                <p><b>2. Identidade:</b> O perfil é gerenciado via Firebase Auth com criptografia AES-256 de ponta a ponta.</p>
+                <p><b>3. Conduta:</b> Relatórios falsos de nodos (spam) resultam em revogação imediata das credenciais de acesso à rede.</p>
+                <p><b>4. Integridade:</b> Proibido o uso de scrapers ou ferramentas de automatização nesta interface Enterprise.</p>
             </div>
-            <button onclick="toggleToS(false)" class="google-btn" style="background:var(--accent); color:white; margin-top:40px;">I agree</button>
+            <button onclick="toggleToS(false)" class="google-btn" style="background:var(--accent); color:white; margin-top:40px;">Eu aceito os termos</button>
         </div>
     </div>
 
     <div id="config-overlay" class="full-overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:50px;">
-            <h2 style="font-size: 42px; font-weight: 900; letter-spacing: -2px; margin:0;">Settings</h2>
-            <button style="background:rgba(118,118,128,0.2); border:none; padding:16px 26px; border-radius:24px; color:var(--accent); font-weight:800;" onclick="toggleConfig(false)">Done</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:60px;">
+            <h2 style="font-size: 46px; font-weight: 900; letter-spacing: -2.5px; margin:0;">Ajustes</h2>
+            <button style="background:rgba(118,118,128,0.2); border:none; padding:18px 30px; border-radius:26px; color:var(--accent); font-weight:800; font-size:18px;" onclick="toggleConfig(false)">Fechar</button>
         </div>
-        <div style="background:var(--item-bg); padding:32px; border-radius:35px; display:flex; justify-content:space-between; align-items:center; border: 1.5px solid var(--border-color); margin-bottom: 30px;">
-            <div style="display:flex; align-items:center; gap:20px;">
-                <div style="background: #5856d6; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:white;">🌙</div>
-                <span style="font-weight:700; font-size:22px;">Dark UI Mode</span>
+        
+        <div style="background:var(--item-bg); padding:35px; border-radius:40px; display:flex; justify-content:space-between; align-items:center; border: 1.5px solid var(--border-color); margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+            <div style="display:flex; align-items:center; gap:25px;">
+                <div style="background: #5856d6; width:50px; height:50px; border-radius:14px; display:flex; align-items:center; justify-content:center; color:white; font-size:24px;">🌙</div>
+                <span style="font-weight:700; font-size:24px;">Interface Dark</span>
             </div>
-            <input type="checkbox" id="dark-mode-toggle" onchange="alterarTema(this.checked)" checked style="width:36px; height:36px; accent-color: var(--accent);">
+            <input type="checkbox" id="dark-mode-toggle" onchange="alterarTema(this.checked)" checked style="width:42px; height:42px; accent-color: var(--accent);">
         </div>
-        <div style="background:var(--item-bg); padding:35px; border-radius:35px; border: 1.5px solid var(--border-color);">
-            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                <span style="font-weight:600; font-size: 18px;">Core Version</span>
-                <span style="font-family: monospace; font-size: 18px;">5.0.1-STABLE</span>
+
+        <div style="background:var(--item-bg); padding:40px; border-radius:40px; border: 1.5px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+            <div style="display:flex; justify-content:space-between; margin-bottom:25px; border-bottom: 0.5px solid var(--border-color); padding-bottom: 15px;">
+                <span style="font-weight:600; font-size: 20px; opacity:0.7;">Versão do Kernel</span>
+                <span style="font-family: 'SF Mono', monospace; font-size: 20px; font-weight: 700;">5.1.0-STABLE</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:25px; border-bottom: 0.5px solid var(--border-color); padding-bottom: 15px;">
+                <span style="font-weight:600; font-size: 20px; opacity:0.7;">Latência da Grid</span>
+                <span id="ping-val" style="color:var(--ios-green); font-size: 20px; font-weight: 900;">-- ms</span>
             </div>
             <div style="display:flex; justify-content:space-between;">
-                <span style="font-weight:600; font-size: 18px;">Network Latency</span>
-                <span id="ping-val" style="color:var(--ios-green); font-size: 18px; font-weight: 900;">-- ms</span>
+                <span style="font-weight:600; font-size: 20px; opacity:0.7;">Status do Firebase</span>
+                <span style="color:var(--ios-green); font-size: 20px; font-weight: 900;">ONLINE</span>
             </div>
         </div>
     </div>
 
     <div id="search-overlay" class="full-overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px;">
-            <h2 style="font-size: 42px; font-weight: 900; letter-spacing: -2px;">Search</h2>
-            <button style="background:none; border:none; color:var(--accent); font-weight:800; font-size:20px;" onclick="toggleSearch(false)">Cancel</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:50px;">
+            <h2 style="font-size: 46px; font-weight: 900; letter-spacing: -2.5px;">Scanner</h2>
+            <button style="background:none; border:none; color:var(--accent); font-weight:800; font-size:22px;" onclick="toggleSearch(false)">Cancelar</button>
         </div>
-        <input type="text" id="search-input" placeholder="Coordinate, City or Station ID..." style="width:100%; padding:26px 30px; border-radius:32px; border:none; background:rgba(118,118,128,0.18); color:var(--text-main); font-size:22px; box-sizing: border-box;">
-        <button onclick="realizarPesquisa()" style="background:var(--accent); color:white; border:none; padding:26px; border-radius:32px; font-weight:900; font-size:22px; width:100%; margin-top:20px;">SCAN GRID</button>
-        <div id="results-list" style="margin-top:45px; flex:1; overflow-y:auto;"></div>
-    </div>
-
-    <div id="comment-panel">
-        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.65); pointer-events:auto;" onclick="toggleComments(false)"></div>
-        <div class="chat-sheet">
-            <div style="height:7px; width:50px; background:var(--border-color); border-radius:12px; align-self:center; margin:20px 0;"></div>
-            <div style="padding:0 40px 30px 40px; border-bottom:1.5px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="margin:0; font-size:30px; font-weight:900;">Intelligence Hub</h3>
-                <button onclick="toggleComments(false)" style="background:rgba(118,118,128,0.18); border:none; width:48px; height:48px; border-radius:50%; font-weight:900;">✕</button>
-            </div>
-            <div class="comm-list" id="comm-container" style="flex:1; overflow-y:auto; padding:40px;"></div>
-            <div class="comm-input-area">
-                <input type="text" id="comm-input" placeholder="Broadcast intelligence..." style="flex:1; padding:22px 32px; border-radius:35px; border:none; background:rgba(118,118,128,0.15); color:var(--text-main); font-size:19px; outline:none;">
-                <button id="btn-send-comm" onclick="enviarComentarioFirebase()" disabled style="background:var(--accent); color:white; border:none; width:65px; height:65px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
-                </button>
-            </div>
+        <div style="position:relative;">
+            <input type="text" id="search-input" placeholder="Coordenada, Cidade ou ID da Estação..." style="width:100%; padding:30px 35px; border-radius:35px; border:none; background:rgba(118,118,128,0.22); color:var(--text-main); font-size:24px; box-sizing: border-box; outline:none; transition: 0.3s; border: 2px solid transparent;">
         </div>
+        <button onclick="realizarPesquisa()" style="background:var(--accent); color:white; border:none; padding:28px; border-radius:35px; font-weight:900; font-size:24px; width:100%; margin-top:25px; box-shadow: var(--shadow-glow); active { transform: scale(0.98) }">ESCANEAR COORDENADAS</button>
+        
+        <div id="results-list" style="margin-top:50px; flex:1; overflow-y:auto; padding-bottom: 50px;">
+            </div>
     </div>
 
     <button class="fab btn-config" onclick="toggleConfig(true)">⚙️</button>
     <button class="fab btn-locate" id="locate-btn" onclick="toggleGPS()">🛰️</button>
     <button class="fab btn-search" onclick="toggleSearch(true)">🔍</button>
+
     <div id="map"></div>
+
+    <div id="comment-panel">
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.7); pointer-events:auto;" onclick="toggleComments(false)"></div>
+        <div class="chat-sheet">
+            <div style="height:8px; width:60px; background:var(--border-color); border-radius:20px; align-self:center; margin:25px 0;"></div>
+            <div style="padding:0 45px 35px 45px; border-bottom:1.5px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h3 style="margin:0; font-size:34px; font-weight:900; letter-spacing: -1.5px;">Intelligence Hub</h3>
+                    <span id="tower-id-display" style="font-family:monospace; opacity:0.5; font-size:16px;">NODE: SCANNING...</span>
+                </div>
+                <button onclick="toggleComments(false)" style="background:rgba(118,118,128,0.2); border:none; width:55px; height:55px; border-radius:50%; font-size:22px; display:flex; align-items:center; justify-content:center;">✕</button>
+            </div>
+            
+            <div class="comm-list" id="comm-container" style="flex:1; overflow-y:auto; padding:45px;">
+                </div>
+
+            <div class="comm-input-area">
+                <input type="text" id="comm-input" placeholder="Transmita inteligência..." style="flex:1; padding:24px 35px; border-radius:40px; border:none; background:rgba(118,118,128,0.18); color:var(--text-main); font-size:21px; outline:none; border: 1px solid transparent; transition: 0.3s;">
+                <button id="btn-send-comm" onclick="enviarComentarioFirebase()" disabled style="background:var(--accent); color:white; border:none; width:70px; height:70px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow: var(--shadow-glow);">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
@@ -311,6 +460,7 @@
         import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // FIREBASE ENTERPRISE CONFIGURATION
         const firebaseConfig = {
             apiKey: "AIzaSyD-9mGZUB4m_vuc8mAATPtpiQdinb4nYx0",
             authDomain: "radar-database-3448b.firebaseapp.com",
@@ -325,32 +475,50 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
+        // GLOBAL EXPOSURE FOR LEGACY COMPATIBILITY
         window.db = db; window.collection = collection; window.addDoc = addDoc;
         window.query = query; window.where = where; window.orderBy = orderBy;
         window.getDocs = getDocs; window.Timestamp = Timestamp;
 
         let currentUser = null;
 
+        // AUTHENTICATION PROTOCOL
         window.loginWithGoogle = async () => {
-            try { await signInWithPopup(auth, provider); } 
-            catch (e) { window.iosNotify("Access Denied", "Auth link severed.", "error"); }
+            try { 
+                window.iosNotify("Autenticando", "Conectando ao Google Cloud...", "info");
+                await signInWithPopup(auth, provider); 
+            } 
+            catch (e) { 
+                window.iosNotify("Acesso Negado", "Falha na verificação de identidade.", "error"); 
+                console.error("Auth Critical Error:", e);
+            }
         };
 
+        // MONITOR DE ESTADO - AQUI ACONTECE A MÁGICA DA REMOÇÃO
         onAuthStateChanged(auth, (user) => {
             const authOverlay = document.getElementById('auth-overlay');
             if (user) {
                 currentUser = user;
-                // --- DEFINITIVE TOUCH BLOCK FIX ---
+                
+                // 1. Inicia animação de saída
                 authOverlay.style.opacity = '0';
-                authOverlay.style.visibility = 'hidden';
+                authOverlay.style.transform = 'scale(1.2) translateY(-20px)';
                 authOverlay.style.pointerEvents = 'none';
+                
+                // 2. DELEÇÃO FÍSICA DO DOM (O frame some para sempre)
                 setTimeout(() => { 
-                    if(authOverlay.parentNode) authOverlay.parentNode.removeChild(authOverlay); 
-                    window.map.invalidateSize();
-                }, 1100);
-                window.iosNotify("Secure Access", `Welcome, Agent ${user.displayName.split(' ')[0]}.`);
+                    if(authOverlay && authOverlay.parentNode) {
+                        authOverlay.parentNode.removeChild(authOverlay); 
+                        console.log("LOG: [Auth System] Frame removido. Toque no mapa liberado.");
+                    }
+                    // Força o mapa a recalcular o tamanho agora que a frente está livre
+                    if(window.map) window.map.invalidateSize();
+                }, 1000);
+
+                window.iosNotify("Acesso Seguro", `Bem-vindo, Agente ${user.displayName.split(' ')[0]}.`);
             } else {
                 currentUser = null;
+                // Caso o usuário saia, o sistema recarregaria (opcional)
             }
         });
 
@@ -360,48 +528,76 @@
     </script>
         <script>
         /* ================================================================
-           MAP RENDERING ENGINE & UI LOGIC - FINAL CORE
+           GEOSPATIAL RENDERING ENGINE & TACTICAL LOGIC
            ================================================================
-           Architecture: Leaflet.js + Overpass API + Matrix Grid
+           Arquitetura: Leaflet.js Core + Overpass API + Firebase Realtime
         */
+        
+        // Inicialização do Canvas do Mapa com parâmetros de alta performance
         const map = L.map('map', { 
-            zoomControl: false, attributionControl: false, tap: true,
-            maxBoundsViscosity: 1.0, preferCanvas: true
+            zoomControl: false, 
+            attributionControl: false, 
+            tap: true,
+            maxBoundsViscosity: 1.0, 
+            preferCanvas: true,
+            bounceAtZoomLimits: true
         }).setView([-15.7942, -47.8822], 4);
         
         window.map = map;
-        const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+
+        // Camadas de Tiles - Motor de Renderização Visual
+        const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 20,
+            subdomains: 'abcd'
+        }).addTo(map);
+
         const markersLayer = L.layerGroup().addTo(map);
         
         let currentTowerId = null;
         let watchId = null;
         let userMarker = null;
 
-        // NOTIFICATION CONTROLLER
+        /* --- NOTIFICATION CONTROLLER (SYSTEM LEVEL) --- */
         window.iosNotify = (title, msg, type = 'success') => {
             const banner = document.getElementById('ios-banner-system');
             const iconBox = document.getElementById('banner-icon-box');
             document.getElementById('banner-title').innerText = title;
             document.getElementById('banner-msg').innerText = msg;
-            iconBox.style.background = type === 'error' ? 'var(--ios-red)' : 'var(--ios-green)';
-            iconBox.innerText = type === 'error' ? '✕' : '📡';
+            
+            // Configuração de cores por tipo de alerta
+            if (type === 'error') {
+                iconBox.style.background = 'var(--ios-red)';
+                iconBox.innerText = '✕';
+            } else if (type === 'info') {
+                iconBox.style.background = 'var(--accent)';
+                iconBox.innerText = 'ℹ️';
+            } else {
+                iconBox.style.background = 'var(--ios-green)';
+                iconBox.innerText = '📡';
+            }
+            
             banner.classList.add('active');
-            setTimeout(() => banner.classList.remove('active'), 5500);
+            setTimeout(() => banner.classList.remove('active'), 5000);
         };
 
+        /* --- THEME ENGINE --- */
         function alterarTema(isDark) {
             document.body.classList.toggle('dark-mode', isDark);
             const url = isDark 
                 ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' 
                 : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
             tileLayer.setUrl(url);
+            window.iosNotify("Tema Alterado", isDark ? "Modo Dark Ativado" : "Modo Light Ativado", "info");
         }
 
-        // FIREBASE INTELLIGENCE HUB
+        /* --- FIREBASE INTELLIGENCE HUB (COMENTS LOGIC) --- */
         async function carregarComentariosFirebase() {
             const container = document.getElementById('comm-container');
             const sendBtn = document.getElementById('btn-send-comm');
-            container.innerHTML = '<div style="text-align:center; padding:120px;"><div class="loader-inline"></div></div>';
+            const towerDisplay = document.getElementById('tower-id-display');
+            
+            towerDisplay.innerText = `NODE ID: ${currentTowerId}`;
+            container.innerHTML = '<div style="text-align:center; padding:100px;"><div class="loader-main"></div><p style="margin-top:20px; opacity:0.5;">Sincronizando com Firebase...</p></div>';
             
             try {
                 const q = window.query(
@@ -415,75 +611,118 @@
                 sendBtn.disabled = false;
 
                 if (querySnapshot.empty) {
-                    container.innerHTML = `<div style="text-align:center; opacity:0.3; padding:120px;"><h3>Node Isolated</h3><p>No reports found.</p></div>`;
+                    container.innerHTML = `
+                        <div style="text-align:center; opacity:0.3; padding:100px; filter: grayscale(1);">
+                            <div style="font-size:80px; margin-bottom:20px;">🕳️</div>
+                            <h3>Nodo Isolado</h3>
+                            <p>Nenhuma inteligência reportada nesta zona até o momento.</p>
+                        </div>`;
                     return;
                 }
 
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
+                    const date = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleDateString() : 'Recent';
                     const div = document.createElement('div');
                     div.className = 'comm-item';
                     div.innerHTML = `
                         <img src="${data.pfp || 'https://ui-avatars.com/api/?name=Agent'}" class="comm-avatar">
                         <div class="comm-content">
-                            <div class="comm-user">${data.user}</div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div class="comm-user">${data.user}</div>
+                                <div style="font-size:12px; opacity:0.4; font-weight:700;">${date}</div>
+                            </div>
                             <div class="comm-txt">${data.text}</div>
                         </div>`;
                     container.appendChild(div);
                 });
-            } catch (e) { container.innerHTML = '<p style="color:red;">Link failure. Index required.</p>'; }
+            } catch (e) { 
+                console.error("Firebase Sync Error:", e);
+                container.innerHTML = '<p style="color:var(--ios-red); text-align:center; padding:50px;">Falha crítica na conexão com o banco de dados. Verifique sua permissão.</p>'; 
+            }
         }
 
         async function enviarComentarioFirebase() {
             const input = document.getElementById('comm-input');
             const text = input.value.trim();
             if (text.length < 3) return;
+            
             try {
                 const u = window.getCurrentUserData();
                 await window.addDoc(window.collection(window.db, "comments"), {
-                    towerId: currentTowerId, text: text, createdAt: window.Timestamp.now(), user: u.name, pfp: u.pfp
+                    towerId: currentTowerId, 
+                    text: text, 
+                    createdAt: window.Timestamp.now(), 
+                    user: u.name, 
+                    pfp: u.pfp
                 });
-                input.value = ""; carregarComentariosFirebase();
-                window.iosNotify("Signal Sent", "Sync complete.");
-            } catch (e) { window.iosNotify("Error", "Sync failed.", "error"); }
+                input.value = ""; 
+                carregarComentariosFirebase();
+                window.iosNotify("Sinal Enviado", "Inteligência integrada com sucesso.", "success");
+            } catch (e) { 
+                window.iosNotify("Erro de Sync", "Falha ao transmitir dados.", "error"); 
+            }
         }
 
-        // GRID SCANNER
+        /* --- GRID SCANNER (OVERPASS API) --- */
         async function carregarMapa() {
             if(map.getZoom() < 13) return;
+            
             const b = map.getBounds();
-            const query = `[out:json][timeout:35];(node["man_made"~"mast|tower"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}););out body;`;
+            const queryOverpass = `[out:json][timeout:35];(node["man_made"~"mast|tower"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});node["telecom"="tower"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}););out body;`;
+            
             try {
-                const res = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query));
+                const res = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(queryOverpass));
                 const data = await res.json();
+                
                 markersLayer.clearLayers();
                 data.elements.forEach(el => {
-                    const icon = L.divIcon({ html: `<div style="font-size:45px; filter: drop-shadow(0 0 10px rgba(0,122,255,0.5)); transform:translateY(-18px);">🗼</div>`, className: '', iconSize: [48,48] });
-                    L.marker([el.lat, el.lon], {icon: icon}).addTo(markersLayer).on('click', () => {
+                    const icon = L.divIcon({ 
+                        html: `<div style="font-size:45px; filter: drop-shadow(0 0 10px rgba(0,122,255,0.6)); transform:translateY(-18px); transition: 0.3s;" class="tower-marker">🗼</div>`, 
+                        className: '', 
+                        iconSize: [48,48] 
+                    });
+                    
+                    const marker = L.marker([el.lat, el.lon], {icon: icon}).addTo(markersLayer);
+                    marker.on('click', () => {
                         currentTowerId = el.id.toString();
-                        toggleComments(true); carregarComentariosFirebase();
+                        toggleComments(true); 
+                        carregarComentariosFirebase();
                     });
                 });
-            } catch (e) { console.warn("Grid weak."); }
+            } catch (e) { 
+                console.warn("Grid Signal Weak - Overpass is busy."); 
+            }
         }
 
         map.on('moveend', carregarMapa);
 
-        // GPS & SEARCH
+        /* --- NAVIGATION & SEARCH SYSTEMS --- */
         function toggleGPS() {
             const btn = document.getElementById('locate-btn');
             if (watchId) {
-                navigator.geolocation.clearWatch(watchId); watchId = null;
-                btn.classList.remove('active'); if(userMarker) map.removeLayer(userMarker);
+                navigator.geolocation.clearWatch(watchId); 
+                watchId = null;
+                btn.classList.remove('active'); 
+                if(userMarker) map.removeLayer(userMarker);
+                window.iosNotify("GPS Offline", "Rastreamento desativado.");
             } else {
                 btn.classList.add('active');
+                window.iosNotify("GPS Online", "Sincronizando satélites...", "info");
                 watchId = navigator.geolocation.watchPosition(p => {
                     const { latitude, longitude } = p.coords;
                     if (!userMarker) {
-                        userMarker = L.circleMarker([latitude, longitude], { radius: 12, color: '#fff', weight: 4, fillColor: 'var(--accent)', fillOpacity: 1 }).addTo(map);
+                        userMarker = L.circleMarker([latitude, longitude], { 
+                            radius: 14, color: '#fff', weight: 4, fillColor: 'var(--accent)', fillOpacity: 1 
+                        }).addTo(map);
                         map.setView([latitude, longitude], 16);
-                    } else { userMarker.setLatLng([latitude, longitude]); }
-                }, null, { enableHighAccuracy: true });
+                    } else { 
+                        userMarker.setLatLng([latitude, longitude]); 
+                    }
+                }, (err) => {
+                    window.iosNotify("Erro GPS", "Permissão negada.", "error");
+                    btn.classList.remove('active');
+                }, { enableHighAccuracy: true });
             }
         }
 
@@ -491,22 +730,35 @@
             const input = document.getElementById('search-input').value;
             const resultsBox = document.getElementById('results-list');
             if (input.length < 3) return;
-            resultsBox.innerHTML = '<div style="text-align:center;"><div class="loader-inline"></div></div>';
+            
+            resultsBox.innerHTML = '<div style="text-align:center; padding:40px;"><div class="loader-main"></div></div>';
+            
             try {
                 const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(input)}`);
                 const data = await res.json();
                 resultsBox.innerHTML = "";
+                
+                if(data.length === 0) {
+                    resultsBox.innerHTML = '<p style="text-align:center; opacity:0.5;">Nenhum local encontrado.</p>';
+                    return;
+                }
+
                 data.forEach(item => {
                     const card = document.createElement('div');
-                    card.className = 'result-card';
-                    card.innerHTML = `<div><b>${item.display_name.split(',')[0]}</b><br><small>${item.display_name.substring(0, 50)}...</small></div>`;
-                    card.onclick = () => { map.setView([item.lat, item.lon], 16); toggleSearch(false); };
+                    card.style.cssText = "background:var(--item-bg); padding:28px; border-radius:30px; margin-bottom:15px; border:1.5px solid var(--border-color); cursor:pointer; display:flex; align-items:center; gap:20px;";
+                    card.innerHTML = `<div style="font-size:30px;">📍</div><div><b style="font-size:18px;">${item.display_name.split(',')[0]}</b><br><small style="opacity:0.6;">${item.display_name.substring(0, 60)}...</small></div>`;
+                    card.onclick = () => { 
+                        map.setView([item.lat, item.lon], 16); 
+                        toggleSearch(false); 
+                    };
                     resultsBox.appendChild(card);
                 });
-            } catch (e) { resultsBox.innerHTML = '<p>Search error.</p>'; }
+            } catch (e) { 
+                resultsBox.innerHTML = '<p>Erro na rede de pesquisa.</p>'; 
+            }
         }
 
-        // UI HELPERS
+        /* --- UI HELPERS & OVERLAYS --- */
         function toggleConfig(show) { document.getElementById('config-overlay').classList.toggle('active', show); }
         function toggleSearch(show) { document.getElementById('search-overlay').classList.toggle('active', show); }
         function toggleComments(show) { document.getElementById('comment-panel').classList.toggle('active', show); }
@@ -515,15 +767,26 @@
             document.getElementById('tos-portal').style.display = show ? 'block' : 'none';
         }
 
+        // Sistema de monitoramento de Latência (Ping)
         setInterval(() => {
             const start = Date.now();
-            fetch('https://www.google.com/favicon.ico', { mode: 'no-cors' }).then(() => {
+            fetch('https://www.google.com/favicon.ico', { mode: 'no-cors', cache: 'no-store' }).then(() => {
                 const latency = Date.now() - start;
-                document.getElementById('ping-val').innerText = latency + " ms";
-            });
-        }, 8000);
+                const pingEl = document.getElementById('ping-val');
+                if(pingEl) {
+                    pingEl.innerText = latency + " ms";
+                    pingEl.style.color = latency < 150 ? 'var(--ios-green)' : 'var(--ios-orange)';
+                }
+            }).catch(() => {});
+        }, 10000);
 
-        window.onload = () => { window.iosNotify("System Ready", "Matrix V8 online."); };
+        /* --- INITIALIZATION --- */
+        window.onload = () => { 
+            console.log("System Initialized: Radar Ultra Pro V5.1.0");
+            setTimeout(() => {
+                window.iosNotify("Sistema Online", "Matrix V8 carregada com sucesso.");
+            }, 1000);
+        };
     </script>
 </body>
 </html>
