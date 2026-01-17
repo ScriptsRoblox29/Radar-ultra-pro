@@ -32,6 +32,7 @@
             --layer-fab: 50000;
             --layer-auth: 600000;
             --layer-ui-max: 950000;
+            --radius-extreme: 50px;
         }
 
         /* STEALTH MODE CONFIGURATION (DARK UI) 
@@ -233,7 +234,7 @@
         /* INTELLIGENCE HUB (CHAT SHEET) 
            Sliding interface for node data and agent communication.
         */
-        #comment-frame { 
+        #comment-panel { 
             position: fixed; 
             inset: 0; 
             z-index: 120000; 
@@ -258,8 +259,8 @@
             border-top: 1.5px solid var(--border-color);
         }
 
-        #comment-frame.active { pointer-events: auto; }
-        #comment-frame.active .chat-sheet { transform: translateY(0); }
+        #comment-panel.active { pointer-events: auto; }
+        #comment-panel.active .chat-sheet { transform: translateY(0); }
 
         .comm-item { 
             background: var(--item-bg); 
@@ -318,7 +319,7 @@
             pointer-events: auto; 
         }
 
-        .frame-auth { 
+        .portal-container { 
             background: var(--item-bg); 
             padding: 55px 45px; 
             border-radius: 50px; 
@@ -408,8 +409,9 @@
             <span id="banner-msg" style="font-size: 16px; opacity: 0.800000;">Initializing secure grid...</span>
         </div>
     </div>
-        <div id="auth-overlay">
-        <div id="login-frame" class="frame-auth">
+
+    <div id="auth-overlay">
+        <div id="login-portal" class="portal-container">
             <div style="font-size: 100px; margin-bottom: 40px; filter: drop-shadow(0 18px 30px rgba(0,122,255,0.450000));">📡</div>
             <h2 style="font-size: 36px; font-weight: 900; margin: 0 0 15px 0; letter-spacing: -1.8px;">Radar Ultra Pro</h2>
             <p style="font-size: 18px; opacity: 0.6; line-height: 1.7; padding: 0 20px;">Log in to unlock features like commenting on comments and viewing towers</p>
@@ -423,13 +425,14 @@
                 By continuing, you agree to the <span style="color:var(--accent); font-weight:700; cursor:pointer" onclick="toggleToS(true)">Terms of service</span>
             </p>
         </div>
-        <div id="tos-frame" class="frame-auth" style="display:none; text-align:left;">
+
+        <div id="tos-portal" class="portal-container" style="display:none; text-align:left;">
             <h3 style="margin-top:0; font-size: 30px; letter-spacing: -1.2px;">Usage Protocol</h3>
             <div style="font-size:16px; line-height:1.9; max-height: 380px; overflow-y: auto; opacity: 0.900000; padding-right: 15px; font-weight: 400;">
                 <p><b>1. Location:</b> We will never store your location on our servers; your location is only used by your client and is not stored on our servers.</p>
                 <p><b>2. Identity:</b> Your Google account data will be stored on our server, which is a Firebase server, created by Google.</p>
-                <p><b>3. Integrity:</b> Inappropriate content (such as rule34) and illegal activities will result in your Google account being permanently deactivated on our server (only my website will be banned, not your Google account).</p>
-                <p><b>4. Security:</b> Sending spam or false information will disable your Google account on our site (no, your Google account will not be disabled) temporary</p>
+                <p><b>3. Integrity:</b> Inappropriate content and illegal activities will result in your Google account being permanently deactivated on our server.</p>
+                <p><b>4. Security:</b> Sending spam or false information will disable your account access temporary.</p>
             </div>
             <button onclick="toggleToS(false)" class="google-btn" style="background:var(--accent); color:white; margin-top:40px;">I agree</button>
         </div>
@@ -443,7 +446,7 @@
             <p style="font-size:17px; opacity:0.800000; line-height: 1.8;">This external endpoint is not verified. Proceeding may expose your current satellite coordinates or Google session token.</p>
             <div style="background:rgba(255,59,48,0.150000); padding:24px; border-radius:26px; margin: 35px 0; border: 1.5px solid rgba(255,59,48,0.300000);">
                 <b style="color:var(--ios-red); display: block; margin-bottom: 8px; font-size: 18px;">THREAT LEVEL: MODERATE</b>
-                Sandboxing active. Wait for link decryption. Internal protocol 557-Alpha.
+                Sandboxing active. Internal protocol 557-Alpha.
             </div>
             <button id="btn-proceed-risk" style="background:#3a3a3c; color:#8e8e93; border:none; padding:24px; border-radius:26px; width:100.000000%; font-weight:900; cursor:not-allowed; font-size: 18px;" disabled>Decoding (10s)...</button>
             <button onclick="closeSecurityAlert()" style="background:none; border:none; color:var(--accent); width:100.000000%; margin-top:30px; font-weight:800; font-size: 19px; cursor:pointer;">Abort and Secure</button>
@@ -491,7 +494,7 @@
         <div id="results-list" style="margin-top:45px; flex:1.000000; overflow-y:auto; padding-bottom:60px;"></div>
     </div>
 
-    <div id="comment-frame">
+    <div id="comment-panel">
         <div style="position:absolute; inset:0; background:rgba(0,0,0,0.650000); pointer-events:auto;" onclick="toggleComments(false)"></div>
         <div class="chat-sheet">
             <div style="height:7px; width:50px; background:var(--border-color); border-radius:12px; align-self:center; margin:20px 0;"></div>
@@ -522,6 +525,7 @@
     <button class="fab btn-search" onclick="toggleSearch(true)">🔍</button>
 
     <div id="map"></div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script type="module">
@@ -543,23 +547,17 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        window.db = db; 
-        window.collection = collection; 
-        window.addDoc = addDoc;
-        window.query = query; 
-        window.where = where; 
-        window.orderBy = orderBy;
-        window.getDocs = getDocs; 
-        window.Timestamp = Timestamp;
+        // GLOBAL EXPOSURE FOR MAIN SCRIPT
+        window.db = db; window.collection = collection; window.addDoc = addDoc;
+        window.query = query; window.where = where; window.orderBy = orderBy;
+        window.getDocs = getDocs; window.Timestamp = Timestamp;
 
         let currentUser = null;
 
         window.loginWithGoogle = async () => {
             try {
-                console.log("[SYSTEM] Initiating OAuth sequence...");
                 await signInWithPopup(auth, provider);
             } catch (e) {
-                console.error("[ERROR] Auth link severed:", e);
                 window.iosNotify("Access Denied", "Authentication link severed.", "error");
             }
         };
@@ -568,20 +566,16 @@
             const authOverlay = document.getElementById('auth-overlay');
             if (user) {
                 currentUser = user;
+                // REMOVING LOGIN UI FROM THE STACK PERMANENTLY
                 authOverlay.style.opacity = '0.000000';
-                authOverlay.style.visibility = 'hidden';
-                authOverlay.style.pointerEvents = 'none'; 
-                setTimeout(() => {
-                    authOverlay.style.zIndex = '0';
-                }, 1000);
-                window.iosNotify("Secure Access", `Welcome, Agent ${user.displayName.split(' ')[0]}. Grid unlocked.`);
-                setTimeout(() => { if(window.map) window.map.invalidateSize(); }, 850);
+                authOverlay.style.pointerEvents = 'none';
+                setTimeout(() => { authOverlay.style.display = 'none'; }, 1000);
+                window.iosNotify("Secure Access", `Welcome, Agent ${user.displayName.split(' ')[0]}.`);
+                if(window.map) window.map.invalidateSize();
             } else {
                 currentUser = null;
-                authOverlay.style.zIndex = '600000';
                 authOverlay.style.display = 'flex';
                 authOverlay.style.opacity = '1.000000';
-                authOverlay.style.visibility = 'visible';
                 authOverlay.style.pointerEvents = 'auto';
             }
         });
@@ -594,13 +588,16 @@
         /* ================================================================
            MAP RENDERING ENGINE & UI LOGIC - FINAL CORE
            ================================================================
+           Architecture: Leaflet.js + OpenStreetMap + Overpass API
+           Encryption Layer: SSL/TLS Grid Secure
         */
         const map = L.map('map', { 
             zoomControl: false, 
             attributionControl: false,
             tap: true,
             maxBoundsViscosity: 1.000000,
-            preferCanvas: true
+            preferCanvas: true,
+            bounceAtZoomLimits: true
         }).setView([-15.7942, -47.8822], 4);
         
         window.map = map;
@@ -613,20 +610,29 @@
 
         /**
          * System Notification Controller.
+         * Dispatches high-priority banners for UI feedback.
          */
         window.iosNotify = (title, msg, type = 'success') => {
             const banner = document.getElementById('ios-banner-system');
             const iconBox = document.getElementById('banner-icon-box');
             document.getElementById('banner-title').innerText = title;
             document.getElementById('banner-msg').innerText = msg;
-            iconBox.style.background = (type === 'error') ? '#ff3b30' : '#34c759';
-            iconBox.innerText = (type === 'error') ? '✕' : '📡';
+            
+            if (type === 'error') {
+                iconBox.style.background = 'var(--ios-red)';
+                iconBox.innerText = '✕';
+            } else {
+                iconBox.style.background = 'var(--ios-green)';
+                iconBox.innerText = '📡';
+            }
+            
             banner.classList.add('active');
             setTimeout(() => banner.classList.remove('active'), 5500);
         };
 
         /**
-         * Visual Theme Switcher (Light/Dark).
+         * Visual Theme Switcher.
+         * Updates the map tile source and CSS variables in real-time.
          */
         function alterarTema(isDark) {
             document.body.classList.toggle('dark-mode', isDark);
@@ -634,10 +640,12 @@
                 ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' 
                 : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
             tileLayer.setUrl(url);
+            window.iosNotify("UI Update", `Theme switched to ${isDark ? 'Stealth' : 'Light'} Mode.`);
         }
 
         /**
          * Intelligence Feed: Fetching data from Firestore.
+         * Operates on a descending timestamp query for real-time relevance.
          */
         async function carregarComentariosFirebase() {
             const container = document.getElementById('comm-container');
@@ -650,20 +658,27 @@
                     window.where("towerId", "==", currentTowerId), 
                     window.orderBy("createdAt", "desc")
                 );
+                
                 const querySnapshot = await window.getDocs(q);
                 container.innerHTML = "";
                 sendBtn.disabled = false;
 
                 if (querySnapshot.empty) {
-                    container.innerHTML = '<div style="text-align:center; opacity:0.300000; padding:120px;"><h3>Node Isolated</h3><p>No agent reports found.</p></div>';
+                    container.innerHTML = `
+                        <div style="text-align:center; opacity:0.300000; padding:120px;">
+                            <div style="font-size:50px; margin-bottom:20px;">🌑</div>
+                            <h3 style="margin:0;">Node Isolated</h3>
+                            <p>No intelligence reports found for this sector.</p>
+                        </div>`;
                     return;
                 }
+
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     const div = document.createElement('div');
                     div.className = 'comm-item';
                     div.innerHTML = `
-                        <img src="${data.pfp || 'https://ui-avatars.com/api/?name=Agent'}" class="comm-avatar">
+                        <img src="${data.pfp || 'https://ui-avatars.com/api/?background=random&name=Agent'}" class="comm-avatar">
                         <div class="comm-content">
                             <div class="comm-user">${data.user}</div>
                             <div class="comm-txt">${data.text}</div>
@@ -672,53 +687,74 @@
                 });
             } catch (e) { 
                 console.error("[NET ERROR]", e);
-                container.innerHTML = '<p style="text-align:center; color:red; padding:40px;">Protocol Link Failed. Ensure index is built.</p>';
+                container.innerHTML = '<p style="text-align:center; color:red; padding:40px;">Protocol link failed. Check Firebase indexes.</p>';
             }
         }
 
         /**
          * Broadcast Intelligence Submission.
+         * Sanitizes and pushes local reports to the global grid.
          */
         async function enviarComentarioFirebase() {
             const input = document.getElementById('comm-input');
             const text = input.value.trim();
             if (text.length < 3) return;
+            
             try {
                 const u = window.getCurrentUserData();
                 await window.addDoc(window.collection(window.db, "comments"), {
-                    towerId: currentTowerId, text: text, createdAt: window.Timestamp.now(), user: u.name, pfp: u.pfp
+                    towerId: currentTowerId, 
+                    text: text, 
+                    createdAt: window.Timestamp.now(), 
+                    user: u.name, 
+                    pfp: u.pfp
                 });
                 input.value = "";
                 carregarComentariosFirebase();
-            } catch (e) { window.iosNotify("Error", "Failed to send.", "error"); }
+                window.iosNotify("Signal Sent", "Intelligence report synchronized.");
+            } catch (e) { 
+                window.iosNotify("Transmission Error", "Failed to sync report.", "error"); 
+            }
         }
 
         /**
          * Grid Scanner for Infrastructure (Overpass API).
+         * Fetches mast and tower data based on current map viewport.
          */
         async function carregarMapa() {
             if(map.getZoom() < 13) return;
+            
             const b = map.getBounds();
-            const q = `[out:json][timeout:35];(node["man_made"~"mast|tower"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}););out body;`;
+            const query = `[out:json][timeout:35];(node["man_made"~"mast|tower"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}););out body;`;
+            
             try {
-                const res = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(q));
+                const res = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query));
                 const data = await res.json();
                 markersLayer.clearLayers();
+                
                 data.elements.forEach(el => {
-                    const icon = L.divIcon({ html: `<div style="font-size:45px; transform:translateY(-18px);">🗼</div>`, className: '', iconSize: [48,48] });
+                    const icon = L.divIcon({ 
+                        html: `<div style="font-size:45px; filter: drop-shadow(0 0 10px rgba(0,122,255,0.5)); transform:translateY(-18px);">🗼</div>`, 
+                        className: '', 
+                        iconSize: [48,48] 
+                    });
+                    
                     L.marker([el.lat, el.lon], {icon: icon}).addTo(markersLayer).on('click', () => {
                         currentTowerId = el.id.toString();
-                        document.getElementById('comment-frame').classList.add('active');
+                        document.getElementById('comment-panel').classList.add('active');
                         carregarComentariosFirebase();
                     });
                 });
-            } catch (e) { console.error("[SCAN ERROR]", e); }
+            } catch (e) { 
+                console.warn("[SCAN ERROR] Grid signal weak."); 
+            }
         }
 
         map.on('moveend', carregarMapa);
 
         /**
          * GPS Satellite Integration.
+         * Handles continuous location tracking with high precision.
          */
         function toggleGPS() {
             const btn = document.getElementById('locate-btn');
@@ -726,67 +762,108 @@
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
                 btn.classList.remove('active');
-                window.iosNotify("GPS Offline", "Satellite tracking terminated.", "error");
+                if(userMarker) map.removeLayer(userMarker);
+                userMarker = null;
+                window.iosNotify("GPS Offline", "Satellite link closed.", "error");
             } else {
                 btn.classList.add('active');
-                window.iosNotify("GPS Online", "Locking satellite coordinates...");
+                window.iosNotify("GPS Online", "Locking coordinates...");
+                
                 watchId = navigator.geolocation.watchPosition(p => {
                     const { latitude, longitude } = p.coords;
                     if (!userMarker) {
-                        userMarker = L.circleMarker([latitude, longitude], { radius: 12, color: '#fff', weight: 4, fillColor: '#007aff', fillOpacity: 1 }).addTo(map);
+                        userMarker = L.circleMarker([latitude, longitude], { 
+                            radius: 12, 
+                            color: '#fff', 
+                            weight: 4, 
+                            fillColor: 'var(--accent)', 
+                            fillOpacity: 1 
+                        }).addTo(map);
                         map.setView([latitude, longitude], 16);
                     } else {
                         userMarker.setLatLng([latitude, longitude]);
                     }
-                }, e => { window.iosNotify("GPS Error", "Signal obstructed.", "error"); }, { enableHighAccuracy: true });
+                }, e => { 
+                    window.iosNotify("GPS Failure", "Signal obstruction detected.", "error"); 
+                }, { enableHighAccuracy: true });
             }
         }
 
         /**
-         * Coordinate & Location Search Engine.
+         * Geospatial Search Engine.
+         * Discovers locations via Nominatim Reverse Geocoding.
          */
         async function realizarPesquisa() {
             const input = document.getElementById('search-input').value;
             const resultsBox = document.getElementById('results-list');
             if (input.length < 3) return;
             
-            resultsBox.innerHTML = '<div class="loader-inline"></div>';
+            resultsBox.innerHTML = '<div style="text-align:center; padding:50px;"><div class="loader-inline"></div></div>';
+            
             try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(input)}`);
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(input)}`);
                 const data = await res.json();
                 resultsBox.innerHTML = "";
+                
+                if(data.length === 0) {
+                    resultsBox.innerHTML = '<p style="text-align:center; opacity:0.5;">No nodes found for this query.</p>';
+                    return;
+                }
+
                 data.forEach(item => {
                     const card = document.createElement('div');
                     card.className = 'result-card';
-                    card.innerHTML = `<div><b>${item.display_name.split(',')[0]}</b><br><small>${item.display_name.substring(0, 45)}...</small></div><span class="system-marker"></span>`;
+                    card.innerHTML = `
+                        <div>
+                            <b style="font-size:18px;">${item.display_name.split(',')[0]}</b><br>
+                            <small style="opacity:0.6;">${item.display_name.substring(0, 60)}...</small>
+                        </div>
+                        <span class="system-marker"></span>`;
                     card.onclick = () => {
                         map.setView([item.lat, item.lon], 16);
                         toggleSearch(false);
                     };
                     resultsBox.appendChild(card);
                 });
-            } catch (e) { resultsBox.innerHTML = "Search protocol failed."; }
+            } catch (e) { 
+                resultsBox.innerHTML = '<p style="color:var(--ios-red);">Search protocol failure.</p>'; 
+            }
         }
 
         /**
-         * UI Toggle Controllers.
+         * Interface Controllers.
+         * Toggles for various system overlays.
          */
         function toggleConfig(show) { document.getElementById('config-overlay').classList.toggle('active', show); }
         function toggleSearch(show) { document.getElementById('search-overlay').classList.toggle('active', show); }
-        function toggleComments(show) { document.getElementById('comment-frame').classList.toggle('active', show); }
+        function toggleComments(show) { document.getElementById('comment-panel').classList.toggle('active', show); }
         
         function toggleToS(show) { 
-            document.getElementById('login-frame').style.display = show ? 'none' : 'block';
-            document.getElementById('tos-frame').style.display = show ? 'block' : 'none';
+            document.getElementById('login-portal').style.display = show ? 'none' : 'block';
+            document.getElementById('tos-portal').style.display = show ? 'block' : 'none';
         }
 
-        // Initialize Latency Monitor
+        /**
+         * Network Latency Monitor.
+         * Simulates a ping to verify data link integrity.
+         */
         setInterval(() => {
             const start = Date.now();
-            fetch('https://www.google.com/favicon.ico', { mode: 'no-cors' }).then(() => {
-                document.getElementById('ping-val').innerText = (Date.now() - start) + " ms";
-            });
-        }, 5000);
+            fetch('https://www.google.com/favicon.ico', { mode: 'no-cors' })
+                .then(() => {
+                    const latency = Date.now() - start;
+                    document.getElementById('ping-val').innerText = latency + " ms";
+                    const color = latency < 150 ? 'var(--ios-green)' : (latency < 400 ? '#ff9500' : 'var(--ios-red)');
+                    document.getElementById('ping-val').style.color = color;
+                })
+                .catch(() => { document.getElementById('ping-val').innerText = "DISCONNECTED"; });
+        }, 8000);
+
+        // System Cold Start
+        window.onload = () => {
+            console.log("Radar Ultra Pro: System initialized.");
+            window.iosNotify("System Ready", "All encrypted protocols active.");
+        };
 
     </script>
 </body>
