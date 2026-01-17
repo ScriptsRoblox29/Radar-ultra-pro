@@ -12,139 +12,125 @@
     
     <style>
         /* ========================================================================
-           RADAR ULTRA PRO - CORE ARCHITECTURE STYLESHEET
+           RADAR ULTRA PRO - SYSTEM CORE ARCHITECTURE
            ========================================================================
            VERSION: 6.2.0-STABLE
-           ENGINE: WEBKIT / BLINK OPTIMIZED
-           REVISION: 1044.A99.X1
+           MODULE: UI/UX ROOT DEFINITIONS
            
-           DESCRIPTION:
-           This section defines the root design tokens and atomic CSS layers
-           required for high-performance rendering of the tactical grid.
+           This stylesheet defines the atomic design system for the Enterprise
+           Matrix. Every variable is calibrated for OLED and Retina performance.
            ------------------------------------------------------------------------
         */
 
         :root { 
-            /* -- PALETTE: PRIMARY INTERFACE -- */
+            /* -- SYSTEM COLORS: LIGHT MODE -- */
             --bg-ui: #f2f2f7; 
             --text-main: #000000; 
             --item-bg: #ffffff; 
             --border-color: rgba(60, 60, 67, 0.29); 
             --backdrop-color: rgba(255, 255, 255, 0.85);
             
-            /* -- PALETTE: SYSTEM SEMANTICS -- */
+            /* -- SYSTEM BRANDING -- */
             --accent: #007aff; 
             --ios-red: #ff3b30;
             --ios-green: #34c759;
             --ios-orange: #ff9500;
             --ios-gray: #8e8e93;
-            --ios-yellow: #ffcc00;
             --matrix-blue: #0a84ff;
-            --matrix-glow: 0 0 20px rgba(0, 122, 255, 0.45);
+            --matrix-glow: 0 0 25px rgba(0, 122, 255, 0.45);
             
             /* -- ANIMATION PHYSICS -- */
-            --transition-main: all 0.500000s cubic-bezier(0.16, 1, 0.3, 1);
-            --transition-elastic: all 0.700000s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            --transition-smooth: all 0.350000s ease-in-out;
+            --transition-main: all 0.50s cubic-bezier(0.16, 1, 0.3, 1);
+            --transition-elastic: all 0.75s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             
-            /* -- LAYOUT GEOMETRY -- */
-            --safe-area-top: env(safe-area-inset-top);
-            --safe-area-bottom: env(safe-area-inset-bottom);
-            --radius-extreme: 42px;
-            --radius-standard: 26px;
-            --radius-small: 14px;
+            /* -- LAYOUT TOKENS -- */
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
+            --radius-xl: 42px;
+            --radius-lg: 26px;
+            --radius-md: 14px;
 
-            /* -- ELEVATION ENGINE -- */
-            --shadow-ios: 0 15px 35px rgba(0,0,0,0.200000);
-            --shadow-float: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            --layer-ground: 1;
-            --layer-map: 5;
-            --layer-fab: 50000;
-            --layer-overlays: 100000;
-            --layer-auth: 600000;
-            --layer-critical: 999999;
-            --layer-system-max: 2000000;
+            /* -- ELEVATION SYSTEM -- */
+            --layer-map: 10;
+            --layer-fab: 500;
+            --layer-panel: 1000;
+            --layer-overlay: 5000;
+            --layer-auth: 10000;
+            --layer-system: 99999;
         }
 
-        /* DARK MODE - SYSTEM OVERRIDE */
+        /* -- STEALTH MODE (DARK) OVERRIDE -- */
         body.dark-mode { 
             --bg-ui: #000000; 
             --text-main: #ffffff; 
             --item-bg: #1c1c1e; 
-            --border-color: rgba(84, 84, 88, 0.650000); 
+            --border-color: rgba(84, 84, 88, 0.65); 
             --accent: #0a84ff; 
             --backdrop-color: rgba(28, 28, 30, 0.85); 
-            --shadow-ios: 0 15px 35px rgba(0,0,0,0.550000);
         }
 
-        /* RESET AND BODY CONFIGURATION */
+        /* -- RESET & BASE CONFIG -- */
         body { 
             margin: 0; padding: 0; 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; 
-            overflow: hidden; 
             background: var(--bg-ui); color: var(--text-main); 
-            -webkit-font-smoothing: antialiased; 
-            height: 100vh; width: 100vw;
-            position: fixed; touch-action: none; 
-            user-select: none; -webkit-user-select: none;
+            overflow: hidden; height: 100vh; width: 100vw;
+            position: fixed; touch-action: none; -webkit-user-select: none;
         }
 
-        /* TACTICAL MAP CANVAS */
+        /* -- MAP RENDERER -- */
         #map { 
-            height: 100.000000%; width: 100.000000%; 
+            height: 100%; width: 100%; 
             z-index: var(--layer-map); 
             position: absolute; top: 0; left: 0; 
-            background: #0f0f0f;
-            outline: none;
+            background: #000;
         }
 
-        /* IOS SYSTEM BANNER COMPONENT */
+        /* -- NOTIFICATION SYSTEM -- */
         #ios-banner-system {
             position: fixed; top: -250px; left: 50%; transform: translateX(-50%);
-            width: 92%; max-width: 460px; background: var(--backdrop-color);
-            backdrop-filter: blur(50px) saturate(210%) brightness(1.1);
-            -webkit-backdrop-filter: blur(50px) saturate(210%) brightness(1.1);
-            border: 0.5px solid var(--border-color); padding: 24px 28px; border-radius: 42px;
-            z-index: var(--layer-system-max); display: flex; align-items: center; gap: 22px;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.350000); transition: var(--transition-main); 
-            pointer-events: none;
+            width: 90%; max-width: 440px; background: var(--backdrop-color);
+            backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
+            border: 0.5px solid var(--border-color); padding: 22px; border-radius: 38px;
+            z-index: var(--layer-system); transition: var(--transition-main);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            display: flex; align-items: center; gap: 15px;
         }
 
-        #ios-banner-system.active { top: 50px; pointer-events: auto; }
+        #ios-banner-system.active { top: 60px; }
 
         .banner-icon {
-            width: 54px; height: 54px; border-radius: 18px; 
+            width: 50px; height: 50px; border-radius: 15px; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 28px; background: var(--accent); color: white;
+            font-size: 24px; background: var(--accent); color: white;
         }
 
-        /* MODAL OVERLAY ARCHITECTURE */
+        /* -- INTERFACE OVERLAYS -- */
         .full-overlay { 
             position: fixed; inset: 0; background: var(--bg-ui); 
-            z-index: var(--layer-overlays); display: none; 
-            flex-direction: column; padding: 80px 40px; 
-            opacity: 0; transform: scale(1.1);
-            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.9, 0.2, 1);
+            z-index: var(--layer-overlay); display: none; 
+            flex-direction: column; padding: 80px 30px; 
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
 
-        .full-overlay.active { display: flex; opacity: 1; transform: scale(1); }
+        .full-overlay.active { display: flex; opacity: 1; transform: translateY(0); }
 
-        /* INTERFACE FLOATING BUTTONS */
+        /* -- FLOATING ACTION BUTTONS -- */
         .fab { 
-            position: absolute; width: 74px; height: 74px; border-radius: 28px; 
-            border: none; cursor: pointer; display: flex; align-items: center; 
-            justify-content: center; box-shadow: 0 18px 45px rgba(0,0,0,0.400000); 
-            z-index: var(--layer-fab); background: var(--backdrop-color);
-            backdrop-filter: blur(35px) saturate(190%);
-            transition: var(--transition-elastic); font-size: 30px; color: var(--text-main);
-            border: 1.5px solid var(--border-color);
+            position: absolute; width: 70px; height: 70px; border-radius: 24px; 
+            border: none; display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4); z-index: var(--layer-fab); 
+            background: var(--backdrop-color); backdrop-filter: blur(20px);
+            transition: var(--transition-elastic); font-size: 28px; color: var(--text-main);
+            border: 1px solid var(--border-color);
         }
         
-        .btn-search { bottom: 110px; right: 35px; background: var(--accent); color: white; }
-        .btn-config { bottom: 110px; left: 35px; }
-        .btn-locate { bottom: 210px; right: 35px; }
+        .btn-search { bottom: 120px; right: 30px; background: var(--accent); color: white; border: none; }
+        .btn-config { bottom: 120px; left: 30px; }
+        .btn-locate { bottom: 210px; right: 30px; }
 
-        /* AUTHENTICATION LAYER */
+        /* -- AUTHENTICATION PORTAL -- */
         #auth-overlay { 
             position: fixed; inset: 0; background: var(--bg-ui); 
             z-index: var(--layer-auth); display: flex; 
@@ -157,60 +143,52 @@
         }
 
         .frame-auth { 
-            background: var(--item-bg); padding: 60px 45px; border-radius: 55px; 
-            text-align: center; width: 90%; max-width: 440px; 
-            border: 1.5px solid var(--border-color); box-shadow: 0 50px 140px rgba(0,0,0,0.350000); 
+            background: var(--item-bg); padding: 50px 30px; border-radius: 45px; 
+            text-align: center; width: 85%; max-width: 400px; 
+            border: 1px solid var(--border-color); box-shadow: 0 40px 100px rgba(0,0,0,0.3); 
         }
 
         .google-btn { 
-            background: var(--text-main); color: var(--bg-ui); border: none; padding: 26px; 
-            border-radius: 26px; width: 100%; font-weight: 800; display: flex; 
-            align-items: center; justify-content: center; gap: 18px; cursor: pointer; 
-            margin-top: 50px; font-size: 20px; transition: 0.3s;
+            background: var(--text-main); color: var(--bg-ui); border: none; padding: 22px; 
+            border-radius: 22px; width: 100%; font-weight: 800; display: flex; 
+            align-items: center; justify-content: center; gap: 15px; cursor: pointer; 
+            margin-top: 40px; font-size: 19px;
         }
 
-        /* SECURITY SYSTEM: TERMS OF SERVICE */
+        /* -- SECURITY SYSTEM: TERMS OF SERVICE -- */
         #security-alert {
             position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            z-index: var(--layer-critical); display: none; justify-content: center;
-            align-items: center; padding: 40px; backdrop-filter: blur(20px);
+            z-index: var(--layer-system); display: none; justify-content: center;
+            align-items: center; padding: 30px; backdrop-filter: blur(15px);
         }
 
         .alert-box {
-            background: var(--item-bg); padding: 50px; border-radius: 48px;
-            max-width: 580px; border: 2.5px solid var(--ios-red);
-            box-shadow: 0 0 80px rgba(255, 59, 48, 0.4);
+            background: var(--item-bg); padding: 40px; border-radius: 40px;
+            max-width: 500px; border: 2px solid var(--ios-red);
+            box-shadow: 0 0 60px rgba(255, 59, 48, 0.3);
         }
 
-        /* INTELLIGENCE HUB COMPONENTS (FIXED FOR MAP VISIBILITY) */
-        #comment-frame { 
-            position: fixed; inset: 0; z-index: 120000; 
-            pointer-events: none; display: flex; flex-direction: column; justify-content: flex-end; 
-        }
-
-        .chat-sheet { 
-            background: var(--bg-ui); width: 100%; height: 85vh; border-radius: 55px 55px 0 0; 
-            display: flex; flex-direction: column; transform: translateY(100%); 
-            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: auto; 
-            box-shadow: 0 -20px 60px rgba(0,0,0,0.3); border-top: 1.5px solid var(--border-color);
-        }
-
-        #comment-frame.active .chat-sheet { transform: translateY(0); }
-        
-        /* LOGOUT OPTION STYLING */
+        /* -- LOGOUT OPTION LOGIC -- */
         #logout-container {
-            display: none; /* Only visible if authenticated */
-            margin-top: 40px;
-            padding-top: 20px;
+            display: none; /* Controlled via JS based on token availability */
+            margin-top: 50px;
+            padding-top: 25px;
             border-top: 1px solid var(--border-color);
         }
         
         .logout-btn {
-            background: none; border: 2px solid var(--ios-red); color: var(--ios-red);
-            padding: 18px 30px; border-radius: 20px; font-weight: 700; font-size: 18px;
-            cursor: pointer; width: 100%; transition: 0.3s;
+            background: transparent; border: 2px solid var(--ios-red); color: var(--ios-red);
+            padding: 20px; border-radius: 20px; font-weight: 700; font-size: 18px;
+            width: 100%; cursor: pointer; transition: 0.3s;
         }
-        .logout-btn:active { background: var(--ios-red); color: white; }
+        .logout-btn:active { background: var(--ios-red); color: #fff; }
+
+        /* -- SCANNER RESULTS STYLING -- */
+        .result-card {
+            background: var(--item-bg); margin-bottom: 15px; padding: 25px;
+            border-radius: 24px; border: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+        }
     </style>
 </head>
 <body class="dark-mode">
@@ -218,7 +196,7 @@
         <div id="banner-icon-box" class="banner-icon">📡</div>
         <div style="flex: 1.0;">
             <b id="banner-title" style="display: block; font-size: 19px; letter-spacing: -0.8px;">Radar Ultra Pro</b>
-            <span id="banner-msg" style="font-size: 16px; opacity: 0.8;">System initializing...</span>
+            <span id="banner-msg" style="font-size: 16px; opacity: 0.8;">Syncing with global uplink...</span>
         </div>
     </div>
 
@@ -226,7 +204,7 @@
         <div id="login-portal" class="frame-auth">
             <div style="font-size: 110px; margin-bottom: 45px; filter: drop-shadow(0 20px 40px rgba(0,122,255,0.4));">📡</div>
             <h2 style="font-size: 42px; font-weight: 900; margin: 0 0 15px 0; letter-spacing: -2.0px;">Radar Ultra Pro</h2>
-            <p style="font-size: 20px; opacity: 0.6; line-height: 1.6; padding: 0 30px;">Access the encrypted grid to track node intelligence and report real-time signals.</p>
+            <p style="font-size: 20px; opacity: 0.6; line-height: 1.6; padding: 0 30px;">Initialize encrypted synchronization to access node intelligence and tactical grid data.</p>
             
             <button class="google-btn" id="main-login-trigger" onclick="loginWithGoogle()">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width:28px;">
@@ -242,14 +220,14 @@
     <div id="security-alert">
         <div class="alert-box">
             <h2 style="color:var(--ios-red); font-size:32px; font-weight:900; margin-top:0; letter-spacing:-1px;">TERMS OF SERVICE</h2>
-            <div style="color:var(--text-main); font-size:18px; line-height:1.6; max-height:300px; overflow-y:auto; margin-bottom:30px; text-align:left; padding-right:10px;">
-                <p><b>1. Usage Authorization:</b> Access to the Radar Ultra Pro grid is granted for personal data visualization only. You agree not to intercept encrypted transmissions for unlawful redistribution.</p>
-                <p><b>2. Data Integrity:</b> All intelligence reported to the Hub must be verified. False signal reporting results in permanent node blacklisting.</p>
-                <p><b>3. Privacy Policy:</b> Your Google identity is used solely for authentication and attribution within the Intelligence Hub. No telemetry is shared with third-party matrices.</p>
-                <p><b>4. Liability:</b> The operator assumes all risks associated with tactical navigation and hardware exposure in high-latency environments.</p>
-                <p><b>5. Updates:</b> Terms are subject to revision under Enterprise Matrix guidelines V6.2.0.</p>
+            <div style="color:var(--text-main); font-size:18px; line-height:1.6; max-height:300px; overflow-y:auto; margin-bottom:30px; text-align:left; padding-right:15px; border-bottom: 1px solid var(--border-color);">
+                <p><b>1. Operational Security:</b> The operator is responsible for maintaining the confidentiality of their node access tokens. Shared credentials compromise grid integrity.</p>
+                <p><b>2. Data Interception:</b> Information gathered via the Overpass API is intended for visualization. Any unauthorized decryption of local signals is prohibited.</p>
+                <p><b>3. Identity Protocol:</b> Authentication through Google Cloud Services is required to establish user attribution within the matrix.</p>
+                <p><b>4. Limitation of Liability:</b> Enterprise Matrix V6.2.0 is provided "as-is". No guarantees are made regarding signal accuracy in high-interference zones.</p>
+                <p><b>5. Termination:</b> Access may be revoked if the operator violates grid broadcast ethics.</p>
             </div>
-            <button style="background:var(--accent); color:white; border:none; padding:22px; border-radius:24px; width:100%; font-weight:800; font-size:20px; letter-spacing:1px; cursor:pointer;" onclick="toggleSecurityAlert(false)">I AGREE</button>
+            <button style="background:var(--accent); color:white; border:none; padding:22px; border-radius:22px; width:100%; font-weight:800; font-size:20px; cursor:pointer; letter-spacing:1px;" onclick="toggleSecurityAlert(false)">I AGREE</button>
         </div>
     </div>
 
@@ -284,7 +262,7 @@
         
         <div id="logout-container">
             <button class="logout-btn" onclick="logoutSequence()">Log out of account</button>
-            <p style="text-align:center; font-size:14px; opacity:0.4; margin-top:15px;">Warning: This will terminate the permanent session token.</p>
+            <p style="text-align:center; font-size:14px; opacity:0.4; margin-top:20px;">Terminating current session token will require re-authentication.</p>
         </div>
     </div>
 
@@ -294,9 +272,9 @@
             <button style="background:none; border:none; color:var(--accent); font-weight:800; font-size:22px;" onclick="toggleSearch(false)">Dismiss</button>
         </div>
         <div style="position:relative;">
-            <input type="text" id="search-input" placeholder="Coordinates or ID..." style="width:100%; padding:32px 38px; border-radius:38px; border:none; background:rgba(118,118,128,0.22); color:var(--text-main); font-size:26px; box-sizing: border-box; outline:none; border: 2.5px solid transparent;">
+            <input type="text" id="search-input" placeholder="Coordinates, ID or Locale..." style="width:100%; padding:30px 35px; border-radius:35px; border:none; background:rgba(118,118,128,0.2); color:var(--text-main); font-size:24px; box-sizing: border-box; outline:none; border: 2px solid transparent;">
         </div>
-        <button onclick="executeGridSearch()" style="background:var(--accent); color:white; border:none; padding:30px; border-radius:38px; font-weight:900; font-size:26px; width:100%; margin-top:28px; box-shadow: var(--matrix-glow);">INITIATE SCAN</button>
+        <button onclick="executeGridSearch()" style="background:var(--accent); color:white; border:none; padding:28px; border-radius:35px; font-weight:900; font-size:24px; width:100%; margin-top:25px; box-shadow: var(--matrix-glow);">INITIATE SCAN</button>
         <div id="results-engine" style="margin-top:50px; flex:1; overflow-y:auto; padding-bottom: 60px;"></div>
     </div>
 
@@ -305,35 +283,9 @@
     <button class="fab btn-search" onclick="toggleSearch(true)">🔍</button>
 
     <div id="map"></div>
-
-    <div id="comment-frame">
-        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); pointer-events:auto;" onclick="toggleComments(false)"></div>
-        <div class="chat-sheet">
-            <div style="height:8px; width:70px; background:var(--border-color); border-radius:20px; align-self:center; margin:25px 0;"></div>
-            <div style="padding:0 45px 35px 45px; border-bottom:1.8px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <h3 style="margin:0; font-size:36px; font-weight:900; letter-spacing: -1.8px;">Intel Hub</h3>
-                    <span id="active-node-id" style="font-family:var(--font-mono); opacity:0.5; font-size:17px;">NODE: STANDBY</span>
-                </div>
-                <button onclick="toggleComments(false)" style="background:rgba(118,118,128,0.2); border:none; width:60px; height:60px; border-radius:50%; font-size:24px; display:flex; align-items:center; justify-content:center;">✕</button>
-            </div>
-            
-            <div class="comm-list" id="intel-container" style="flex:1; overflow-y:auto; padding:45px;"></div>
-
-            <div style="padding: 30px 45px calc(30px + var(--safe-area-bottom)); background: var(--bg-ui); border-top: 1px solid var(--border-color); display: flex; gap: 20px; align-items: center;">
-                <input type="text" id="intel-input" placeholder="Broadcast intelligence..." style="flex:1; padding:26px 38px; border-radius:42px; border:none; background:rgba(118,118,128,0.18); color:var(--text-main); font-size:22px; outline:none;">
-                <button onclick="transmitIntel()" style="background:var(--accent); color:white; border:none; width:75px; height:75px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow: var(--matrix-glow);">
-                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
-                </button>
-            </div>
-        </div>
-    </div>
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
-        /* FIREBASE CLOUD INFRASTRUCTURE CONFIGURATION
-           Project: Radar Database 3448b
-           Service: Auth (Google Identity) & Firestore (NoSQL Intel Hub)
-        */
+        /* FIREBASE MATRIX INITIALIZATION */
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, Timestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -347,116 +299,117 @@
             appId: "1:927242352551:web:a980043e310d5dc1e2e882"
         };
 
-        // GLOBAL ENGINE INITIALIZATION
+        // SYSTEM BOOTSTRAP
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // EXPOSE CORE METHODS TO THE OPERATOR SPACE
-        window.db = db; window.collection = collection; window.addDoc = addDoc;
-        window.query = query; window.where = where; window.orderBy = orderBy;
-        window.getDocs = getDocs; window.Timestamp = Timestamp; window.onSnapshot = onSnapshot;
-        window.auth = auth; window.signOut = signOut;
+        // EXPORTING INSTANCES TO THE GLOBAL SCOPE FOR OPERATIONAL ACCESS
+        window.auth = auth;
+        window.signOut = signOut;
 
-        // AUTHENTICATION: GOOGLE IDENTITY PROVIDER
+        // AUTHENTICATION PROTOCOL: GOOGLE CLOUD UPLINK
         window.loginWithGoogle = async () => {
             try { 
-                window.dispatchNotification("Verification", "Authenticating Cloud Identity...", "info");
+                window.dispatchNotification("Uplink", "Synchronizing identity with cloud...", "info");
                 await signInWithPopup(auth, provider); 
-            } catch (e) { 
-                window.dispatchNotification("Access Denied", "Identity verification failed.", "error"); 
+            } catch (error) { 
+                console.error("Auth Failure:", error);
+                window.dispatchNotification("Access Denied", "Matrix verification failed.", "error"); 
             }
         };
 
-        // NEW FEATURE: PERMANENT TOKEN TERMINATION (LOGOUT)
+        // NEW FEATURE: ACCOUNT DE-AUTHENTICATION (TOKEN TERMINATION)
         window.logoutSequence = async () => {
             try { 
-                window.dispatchNotification("Deauthenticating", "Terminating secure token...", "error");
+                window.dispatchNotification("De-auth", "Terminating secure session token...", "error");
                 await signOut(auth); 
-                // Force interface reset
-                location.reload(); 
-            } catch (e) { 
-                console.error("Logout Error:", e); 
+                // Hard reset to ensure all local caches are purged
+                window.location.reload(); 
+            } catch (error) { 
+                console.error("Logout Sequence Interrupted:", error); 
             }
         };
 
-        // SESSION STATE OBSERVER
+        // SESSION STATE OBSERVER (CONDITIONAL UI LOGIC)
         onAuthStateChanged(auth, (user) => {
             const authOverlay = document.getElementById('auth-overlay');
             const logoutContainer = document.getElementById('logout-container');
             
             if (user) {
+                // TOKEN DETECTED: UNLOCK INTERFACE
                 window.currentUser = user;
-                // Deactivate the lock screen (no permanent black frame)
-                authOverlay.classList.add('deactivated');
+                authOverlay.classList.add('deactivated'); // Hides the login portal
                 
-                // SHOW LOGOUT OPTION (only when authenticated)
-                if(logoutContainer) logoutContainer.style.display = 'block';
+                // CONDITIONAL VISIBILITY: Log out option becomes visible
+                if (logoutContainer) {
+                    logoutContainer.style.display = 'block';
+                }
                 
-                window.dispatchNotification("Grid Access", "Identity confirmed. Uplink stable.");
+                window.dispatchNotification("Grid Active", "Uplink established. Scanning coordinates.");
                 initTacticalMap();
             } else {
-                // If no user, ensure the portal is active and logout option is hidden
+                // NO TOKEN: LOCK INTERFACE & HIDE LOGOUT
                 authOverlay.classList.remove('deactivated');
-                if(logoutContainer) logoutContainer.style.display = 'none';
+                if (logoutContainer) {
+                    logoutContainer.style.display = 'none';
+                }
             }
         });
     </script>
 
     <script>
-        /* ========================================================================
-           GEOSPATIAL CORE: LEAFLET INTEGRATION & MAP PHYSICS
-           ========================================================================
+        /* GEOSPATIAL CORE ENGINE
+           Handles Leaflet map instance and Overpass API node queries.
         */
         let map, userMarker, gpsActive = false;
         let activeMarkers = [];
-        let currentTargetNode = null;
-        let intelUnsubscribe = null;
 
-        // TACTICAL GRID INITIALIZATION
+        // INITIALIZE MAP CANVAS
         function initTacticalMap() {
             if (map) return;
 
+            // Map instance configuration with inertia physics
             map = L.map('map', {
                 zoomControl: false,
                 attributionControl: false,
                 tap: false,
                 maxZoom: 19,
                 minZoom: 3,
-                inertia: true
+                worldCopyJump: true
             }).setView([-15.793889, -47.882778], 13);
 
-            // Vector Tile Layer: Dark Matter (Optimized for OLED)
+            // Vector Tile Implementation: CartoDB Dark Matter
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                 subdomains: 'abcd',
                 maxZoom: 19
             }).addTo(map);
 
-            // SIMULATE GRID LATENCY MONITORING
+            // SIMULATED GRID LATENCY MONITOR
             setInterval(() => {
-                const ping = Math.floor(Math.random() * (45 - 12 + 1) + 12);
-                const monitor = document.getElementById('ping-monitor');
-                if(monitor) monitor.innerText = ping + " MS";
-            }, 3000);
+                const latency = Math.floor(Math.random() * (48 - 14 + 1) + 14);
+                const pingEl = document.getElementById('ping-monitor');
+                if (pingEl) pingEl.innerText = latency + " MS";
+            }, 4000);
 
-            // AUTO-INTERCEPT: Scan for nodes on movement
+            // AUTO-SCAN TRIGGER
             map.on('moveend', () => {
                 if (map.getZoom() >= 14) executeGridSearch(true);
             });
         }
 
-        // SYSTEM NOTIFICATION DISPATCHER
+        // SYSTEM NOTIFICATION DISPATCHER (IOS STYLE)
         window.dispatchNotification = (title, msg, type = "info") => {
             const banner = document.getElementById('ios-banner-system');
             const bTitle = document.getElementById('banner-title');
             const bMsg = document.getElementById('banner-msg');
             const bIcon = document.getElementById('banner-icon-box');
 
-            if(!banner) return;
+            if (!banner) return;
             bTitle.innerText = title;
             bMsg.innerText = msg;
             
+            // UI Color Coordination based on severity
             if (type === "error") bIcon.style.background = "var(--ios-red)";
             else if (type === "success") bIcon.style.background = "var(--ios-green)";
             else bIcon.style.background = "var(--accent)";
@@ -465,21 +418,21 @@
             setTimeout(() => banner.classList.remove('active'), 4500);
         };
 
-        // GPS UPLINK MANAGEMENT
+        // GPS UPLINK CONTROL
         window.toggleTacticalGPS = () => {
             const btn = document.getElementById('locate-btn');
             if (!gpsActive) {
                 gpsActive = true;
-                btn.classList.add('active');
+                btn.style.background = "var(--ios-green)";
                 map.locate({ setView: true, maxZoom: 16, watch: true });
-                window.dispatchNotification("GPS Uplink", "Synchronizing satellite coordinates...");
+                window.dispatchNotification("GPS Link", "Acquiring satellite lock...");
             } else {
                 gpsActive = false;
-                btn.classList.remove('active');
+                btn.style.background = "var(--backdrop-color)";
                 map.stopLocate();
-                if(userMarker) map.removeLayer(userMarker);
+                if (userMarker) map.removeLayer(userMarker);
                 userMarker = null;
-                window.dispatchNotification("GPS Standby", "Tracking disabled by operator.");
+                window.dispatchNotification("GPS Offline", "Satellite tracking suspended.");
             }
         };
 
@@ -493,88 +446,76 @@
             }
         });
 
-        // NODE INTERCEPTION (OVERPASS API)
+        // NODE INTERCEPTION LOGIC (OVERPASS API)
         window.executeGridSearch = async (isAuto = false) => {
-            if (map.getZoom() < 13) return;
-            const b = map.getBounds();
-            const query = `[out:json];node["communication:mobile_phone"="yes"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});out;`;
+            if (map.getZoom() < 13) {
+                if (!isAuto) window.dispatchNotification("Range Error", "Zoom in to scan for nodes.", "error");
+                return;
+            }
+
+            const bounds = map.getBounds();
+            // Query for communication nodes (mobile phone towers)
+            const query = `[out:json];node["communication:mobile_phone"="yes"](${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()});out;`;
             
+            if (!isAuto) window.dispatchNotification("Scanning", "Intercepting node frequencies...");
+
             try {
-                const r = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: query });
-                const d = await r.json();
-                renderNodes(d.elements);
-            } catch (err) { console.error("Grid Failure", err); }
+                const response = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: query });
+                const data = await response.json();
+                renderNodes(data.elements);
+            } catch (err) {
+                window.dispatchNotification("Grid Error", "Uplink to Overpass API failed.", "error");
+            }
         };
 
         function renderNodes(nodes) {
+            // Flush existing nodes
             activeMarkers.forEach(m => map.removeLayer(m));
             activeMarkers = [];
-            const engine = document.getElementById('results-engine');
-            if (engine) engine.innerHTML = '';
+            const resultsEngine = document.getElementById('results-engine');
+            if (resultsEngine) resultsEngine.innerHTML = '';
 
             nodes.forEach(node => {
                 const marker = L.circleMarker([node.lat, node.lon], {
-                    radius: 9, fillColor: "#34c759", color: "#000", weight: 2, fillOpacity: 0.8
+                    radius: 9, fillColor: "#34c759", color: "#1c1c1e", weight: 2, fillOpacity: 0.8
                 }).addTo(map);
 
-                marker.on('click', () => openIntelligenceHub(node));
                 activeMarkers.push(marker);
+
+                // Add result to scanner panel
+                if (resultsEngine) {
+                    const card = document.createElement('div');
+                    card.className = 'result-card';
+                    card.innerHTML = `
+                        <div>
+                            <div style="font-weight:800; font-size:18px;">NODE #${node.id}</div>
+                            <div style="font-size:14px; opacity:0.6;">LAT: ${node.lat.toFixed(4)} | LON: ${node.lon.toFixed(4)}</div>
+                        </div>
+                    `;
+                    card.onclick = () => {
+                        map.setView([node.lat, node.lon], 17);
+                        toggleSearch(false);
+                    };
+                    resultsEngine.appendChild(card);
+                }
             });
         }
 
-        // INTELLIGENCE HUB: REAL-TIME BROADCASTS
-        window.openIntelligenceHub = (node) => {
-            currentTargetNode = node;
-            document.getElementById('active-node-id').innerText = `NODE: ${node.id}`;
-            toggleComments(true);
-            
-            if (intelUnsubscribe) intelUnsubscribe();
-            const q = window.query(window.collection(window.db, "intelligence"), window.where("nodeId", "==", node.id.toString()), window.orderBy("timestamp", "desc"));
-
-            intelUnsubscribe = window.onSnapshot(q, (s) => {
-                const c = document.getElementById('intel-container');
-                c.innerHTML = '';
-                s.forEach(doc => {
-                    const data = doc.data();
-                    const item = document.createElement('div');
-                    item.style = "display:flex; gap:15px; margin-bottom:25px;";
-                    item.innerHTML = `<img src="${data.userPhoto}" style="width:45px; height:45px; border-radius:50%; border:1px solid var(--border-color);"><div style="background:rgba(118,118,128,0.1); padding:15px; border-radius:20px; flex:1;"><b style="display:block; font-size:14px; color:var(--accent);">${data.userName}</b><span style="font-size:17px;">${data.text}</span></div>`;
-                    c.appendChild(item);
-                });
-            });
-        };
-
-        window.transmitIntel = async () => {
-            const input = document.getElementById('intel-input');
-            if (!input.value.trim() || !currentTargetNode) return;
-            await window.addDoc(window.collection(window.db, "intelligence"), {
-                nodeId: currentTargetNode.id.toString(), text: input.value,
-                userName: window.currentUser.displayName, userPhoto: window.currentUser.photoURL,
-                timestamp: window.Timestamp.now()
-            });
-            input.value = '';
-        };
-
-        // INTERFACE CONTROLLERS
-        window.toggleConfig = (s) => {
+        // INTERFACE CONTROL LAYER
+        window.toggleConfig = (show) => {
             const el = document.getElementById('config-overlay');
-            if (s) { el.style.display = 'flex'; setTimeout(() => el.classList.add('active'), 10); }
-            else { el.classList.remove('active'); setTimeout(() => el.style.display = 'none', 500); }
+            if (show) { el.style.display = 'flex'; setTimeout(() => el.classList.add('active'), 10); }
+            else { el.classList.remove('active'); setTimeout(() => el.style.display = 'none', 400); }
         };
 
-        window.toggleSearch = (s) => {
+        window.toggleSearch = (show) => {
             const el = document.getElementById('search-overlay');
-            if (s) { el.style.display = 'flex'; setTimeout(() => el.classList.add('active'), 10); }
-            else { el.classList.remove('active'); setTimeout(() => el.style.display = 'none', 500); }
+            if (show) { el.style.display = 'flex'; setTimeout(() => el.classList.add('active'), 10); }
+            else { el.classList.remove('active'); setTimeout(() => el.style.display = 'none', 400); }
         };
 
-        window.toggleComments = (s) => {
-            const el = document.getElementById('comment-frame');
-            if (s) el.classList.add('active'); else el.classList.remove('active');
-        };
-
-        window.toggleSecurityAlert = (s) => {
-            document.getElementById('security-alert').style.display = s ? 'flex' : 'none';
+        window.toggleSecurityAlert = (show) => {
+            document.getElementById('security-alert').style.display = show ? 'flex' : 'none';
         };
 
         window.applySystemTheme = (isDark) => {
