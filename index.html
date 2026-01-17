@@ -11,15 +11,13 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        /* ================================================================
+        /* ========================================================================
            CORE SYSTEM VARIABLES - MATRIX V8 ARCHITECTURE
-           ================================================================
+           ========================================================================
            Authoritative design tokens for the Enterprise Grid UI.
            Calculated for high-fidelity rendering on Retina/OLED displays.
-           ----------------------------------------------------------------
-           SYSTEM VERSION: 6.2.0-STABLE
-           RENDER ENGINE: WEBKIT/BLINK
-           COLOR GAMUT: P3 PREFERRED
+           SYSTEM VERSION: 6.2.0-STABLE | RENDER ENGINE: WEBKIT/BLINK
+           ------------------------------------------------------------------------
         */
         :root { 
             /* -- PALETTE: BASE UI -- */
@@ -72,10 +70,7 @@
             --radius-small: 14px;
         }
 
-        /* STEALTH MODE CONFIGURATION (DARK UI) 
-           Activated via system override or user preference toggles.
-           Inverts the color matrix for low-light tactical usage.
-        */
+        /* STEALTH MODE CONFIGURATION (DARK UI) */
         body.dark-mode { 
             --bg-ui: #000000; 
             --text-main: #ffffff; 
@@ -86,366 +81,110 @@
             --shadow-ios: 0 15px 35px rgba(0,0,0,0.550000);
         }
 
-        /* BASE BODY RESET & OVERFLOW CONTROL 
-           Prevents unwanted scrolling and ensures full-screen immersion.
-           Disables text selection for app-like feel.
-        */
         body { 
-            margin: 0; 
-            padding: 0;
-            font-family: var(--font-stack); 
-            overflow: hidden; 
-            background: var(--bg-ui); 
-            color: var(--text-main); 
-            -webkit-font-smoothing: antialiased; 
-            -moz-osx-font-smoothing: grayscale;
-            height: 100.000000vh;
-            width: 100.000000vw;
-            position: fixed;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            margin: 0; padding: 0; font-family: var(--font-stack); overflow: hidden; 
+            background: var(--bg-ui); color: var(--text-main); 
+            -webkit-font-smoothing: antialiased; height: 100.000000vh; width: 100.000000vw;
+            position: fixed; touch-action: none; user-select: none; -webkit-user-select: none;
         }
 
-        /* GEOSPATIAL RENDERING ENGINE LAYER 
-           The primary map canvas for satellite tracking.
-        */
         #map { 
-            height: 100.000000%; 
-            width: 100.000000%; 
-            z-index: var(--layer-map); 
-            position: absolute;
-            top: 0;
-            left: 0;
-            background: #0f0f0f;
-            transition: filter 0.800000s cubic-bezier(0.4, 0, 0.2, 1);
-            outline: none;
+            height: 100.000000%; width: 100.000000%; z-index: var(--layer-map); 
+            position: absolute; top: 0; left: 0; background: #0f0f0f;
+            transition: filter 0.800000s cubic-bezier(0.4, 0, 0.2, 1); outline: none;
         }
 
-        /* VISUAL SHADER EFFECTS */
-        .map-blur-effect { 
-            filter: blur(25px) brightness(0.6) saturate(1.4); 
-            pointer-events: none !important; 
-        }
-
-        /* SYSTEM BANNER (IOS NOTIFICATION STYLE) 
-           Handles real-time system alerts and status updates.
-           Simulates Dynamic Island behavior.
-        */
+        /* SYSTEM BANNER (IOS NOTIFICATION STYLE) */
         #ios-banner-system {
-            position: fixed;
-            top: -250px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 92.000000%;
-            max-width: 460px;
-            background: var(--backdrop-color);
+            position: fixed; top: -250px; left: 50%; transform: translateX(-50%);
+            width: 92.000000%; max-width: 460px; background: var(--backdrop-color);
             backdrop-filter: blur(50px) saturate(210%) brightness(1.1);
             -webkit-backdrop-filter: blur(50px) saturate(210%) brightness(1.1);
-            border: 0.5px solid var(--border-color);
-            padding: 24px 28px;
-            border-radius: 42px;
-            z-index: var(--layer-system-max);
-            display: flex;
-            align-items: center;
-            gap: 22px;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.350000);
-            transition: var(--transition-main);
-            pointer-events: none;
+            border: 0.5px solid var(--border-color); padding: 24px 28px; border-radius: 42px;
+            z-index: var(--layer-system-max); display: flex; align-items: center; gap: 22px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.350000); transition: var(--transition-main); pointer-events: none;
         }
 
-        #ios-banner-system.active {
-            top: 50px;
-            pointer-events: auto;
-        }
+        #ios-banner-system.active { top: 50px; pointer-events: auto; }
 
         .banner-icon {
-            width: 54px;
-            height: 54px;
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            flex-shrink: 0;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.200000);
-            background: var(--accent);
-            color: white;
+            width: 54px; height: 54px; border-radius: 18px; display: flex; 
+            align-items: center; justify-content: center; font-size: 28px; 
+            flex-shrink: 0; background: var(--accent); color: white;
         }
 
-        /* PROCEDURAL LOADERS 
-           Visual feedback for background network operations.
-        */
-        .loader-inline { 
-            width: 38px; 
-            height: 38px; 
-            border: 4px solid var(--border-color); 
-            border-bottom-color: var(--accent); 
-            border-radius: 50.000000%; 
-            display: inline-block; 
-            animation: matrixRotation 1.100000s linear infinite; 
-        }
-        @keyframes matrixRotation { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
-
-        /* SIGNAL BADGES (LTE/5G/TOWER STATUS) 
-           Indicates the strength and type of intercepted signals.
-        */
-        .badge { 
-            padding: 10px 16px; 
-            border-radius: 14px; 
-            font-size: 11px; 
-            font-weight: 900; 
-            color: white; 
-            text-transform: uppercase; 
-            letter-spacing: 1.000000px; 
-            display: inline-block;
-        }
-        .bg-5g { background: linear-gradient(135deg, #5856d6, #007aff); box-shadow: 0 5px 12px rgba(0,122,255,0.400000); }
-        .bg-4g { background: var(--ios-green); }
-        .bg-3g { background: var(--ios-orange); }
-        
-        /* FULL-SCREEN OVERLAY ABSTRACTION 
-           Generic template for Config, Search, and Intelligence panels.
-           Uses display:none for performance, toggled via JS.
-        */
         .full-overlay { 
-            position: fixed; 
-            inset: 0; 
-            background: var(--bg-ui); 
-            z-index: var(--layer-overlays); 
-            display: none; 
-            flex-direction: column; 
-            padding: 80px 40px; 
-            box-sizing: border-box;
-            overflow-y: auto;
-            opacity: 0.000000;
-            transform: scale(1.120000);
+            position: fixed; inset: 0; background: var(--bg-ui); z-index: var(--layer-overlays); 
+            display: none; flex-direction: column; padding: 80px 40px; box-sizing: border-box;
+            overflow-y: auto; opacity: 0.000000; transform: scale(1.120000);
             transition: opacity 0.500000s ease, transform 0.500000s cubic-bezier(0.2, 0.9, 0.2, 1);
         }
 
-        .full-overlay.active {
-            display: flex;
-            opacity: 1.000000;
-            transform: scale(1.000000);
-        }
+        .full-overlay.active { display: flex; opacity: 1.000000; transform: scale(1.000000); }
 
-        /* FLOATING INTERFACE COMMANDS (FAB) 
-           Tactile buttons for rapid system navigation.
-        */
         .fab { 
-            position: absolute; 
-            width: 74px; 
-            height: 74px; 
-            border-radius: 28px; 
-            border: none; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            box-shadow: 0 18px 45px rgba(0,0,0,0.400000); 
-            z-index: var(--layer-fab); 
-            background: var(--backdrop-color);
-            backdrop-filter: blur(35px) saturate(190%);
-            -webkit-backdrop-filter: blur(35px) saturate(190%);
-            transition: var(--transition-elastic); 
-            font-size: 30px;
-            color: var(--text-main);
+            position: absolute; width: 74px; height: 74px; border-radius: 28px; 
+            border: none; cursor: pointer; display: flex; align-items: center; 
+            justify-content: center; box-shadow: 0 18px 45px rgba(0,0,0,0.400000); 
+            z-index: var(--layer-fab); background: var(--backdrop-color);
+            backdrop-filter: blur(35px) saturate(190%); -webkit-backdrop-filter: blur(35px) saturate(190%);
+            transition: var(--transition-elastic); font-size: 30px; color: var(--text-main);
             border: 1.5px solid var(--border-color);
         }
-        
-        .fab:hover { transform: scale(1.080000) translateY(-6px); }
-        .fab:active { transform: scale(0.900000); background: var(--accent); color: white; }
         
         .btn-search { bottom: 110px; right: 35px; background: var(--accent); color: white; border: none; }
         .btn-config { bottom: 110px; left: 35px; }
         .btn-locate { bottom: 210px; right: 35px; }
-        .btn-locate.active { 
-            background: var(--ios-green); 
-            color: white; 
-            border-color: transparent; 
-            animation: pulse-gps 2.000000s infinite;
-        }
 
-        @keyframes pulse-gps {
-            0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.700000); }
-            70% { box-shadow: 0 0 0 30px rgba(52, 199, 89, 0.000000); }
-            100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.000000); }
-        }
-
-        /* INTELLIGENCE HUB (CHAT SHEET) 
-           Sliding interface for node data and agent communication.
-        */
-        #comment-frame { 
-            position: fixed; 
-            inset: 0; 
-            z-index: 120000; 
-            pointer-events: none; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: flex-end; 
-        }
-
-        .chat-sheet { 
-            background: var(--bg-ui); 
-            width: 100.000000%; 
-            height: 90.000000vh; 
-            border-radius: 55px 55px 0 0; 
-            display: flex; 
-            flex-direction: column; 
-            transform: translateY(100.000000%); 
-            transition: transform 0.850000s cubic-bezier(0.16, 1, 0.3, 1); 
-            pointer-events: auto; 
-            box-shadow: 0 -35px 90px rgba(0,0,0,0.600000); 
-            overflow: hidden;
-            border-top: 1.5px solid var(--border-color);
-        }
-
-        #comment-frame.active { pointer-events: auto; }
-        #comment-frame.active .chat-sheet { transform: translateY(0); }
-
-        .comm-item { 
-            background: var(--item-bg); 
-            padding: 26px; 
-            border-radius: 32px; 
-            margin-bottom: 22px; 
-            display: flex; 
-            gap: 22px; 
-            align-items: flex-start;
-            border: 0.8px solid var(--border-color); 
-            box-shadow: 0 8px 24px rgba(0,0,0,0.080000);
-            animation: iosEntry 0.600000s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        @keyframes iosEntry { 
-            from { opacity: 0; transform: translateY(40px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-
-        .comm-avatar { 
-            width: 60px; 
-            height: 60px; 
-            border-radius: 50.000000%; 
-            border: 3.5px solid var(--accent); 
-            object-fit: cover; 
-            background: #e5e5ea; 
-            flex-shrink: 0;
-        }
-
-        .comm-content { flex: 1.000000; }
-        .comm-user { font-weight: 800; font-size: 17px; color: var(--accent); margin-bottom: 6px; }
-        .comm-txt { font-size: 18px; color: var(--text-main); line-height: 1.6; }
-        
-        .comm-input-area { 
-            padding: 24px 30px calc(40px + var(--safe-area-bottom)); 
-            border-top: 1.2px solid var(--border-color); 
-            display: flex; 
-            gap: 20px; 
-            background: var(--backdrop-color); 
-            backdrop-filter: blur(35px); 
-            align-items: center; 
-        }
-
-        /* AUTH PORTAL DESIGN 
-           Secure gatekeeper for the Enterprise Grid.
-           Uses CSS transitions for fading out (display:none applied via JS).
-        */
+        /* AUTH PORTAL - CORRIGIDO PARA NÃO BLOQUEAR APÓS LOGIN */
         #auth-overlay { 
-            position: fixed; 
-            inset: 0; 
-            background: var(--bg-ui); 
-            z-index: var(--layer-auth); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            transition: opacity 0.800000s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.800000s;
-            pointer-events: auto; 
-            visibility: visible;
+            position: fixed; inset: 0; background: var(--bg-ui); z-index: var(--layer-auth); 
+            display: flex; justify-content: center; align-items: center; 
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+            pointer-events: auto; visibility: visible;
+        }
+
+        #auth-overlay.deactivated {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
         }
 
         .frame-auth { 
-            background: var(--item-bg); 
-            padding: 60px 45px; 
-            border-radius: 55px; 
-            text-align: center; 
-            width: 90.000000%; 
-            max-width: 440px; 
-            border: 1.5px solid var(--border-color); 
-            box-shadow: 0 50px 140px rgba(0,0,0,0.350000); 
-        }    
+            background: var(--item-bg); padding: 60px 45px; border-radius: 55px; 
+            text-align: center; width: 90.000000%; max-width: 440px; 
+            border: 1.5px solid var(--border-color); box-shadow: 0 50px 140px rgba(0,0,0,0.350000); 
+        }
 
         .google-btn { 
-            background: var(--text-main); 
-            color: var(--bg-ui); 
-            border: none; 
-            padding: 26px; 
-            border-radius: 26px; 
-            width: 100.000000%; 
-            font-weight: 800; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 18px; 
-            cursor: pointer; 
-            margin-top: 50px; 
-            transition: all 0.300000s ease; 
-            font-size: 20px;
+            background: var(--text-main); color: var(--bg-ui); border: none; padding: 26px; 
+            border-radius: 26px; width: 100.000000%; font-weight: 800; display: flex; 
+            align-items: center; justify-content: center; gap: 18px; cursor: pointer; 
+            margin-top: 50px; font-size: 20px;
         }
 
-        .google-btn:hover { filter: brightness(1.200000); }
-        .google-btn:active { transform: scale(0.960000); opacity: 0.900000; }
-        
-        /* SECURITY AND SEARCH COMPONENTS 
-           Protocols for link verification and coordinate discovery.
-        */
-        #security-alert { 
-            position: fixed; 
-            inset: 0; 
-            background: rgba(0,0,0,0.940000); 
-            z-index: 900000; 
-            display: none; 
-            justify-content: center; 
-            align-items: center; 
-            padding: 40px; 
-            backdrop-filter: blur(15px); 
+        /* SECURITY ALERT SYSTEM */
+        #security-alert {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: var(--layer-critical); display: none; justify-content: center;
+            align-items: center; padding: 40px; backdrop-filter: blur(20px);
         }
 
-        .alert-box { 
-            background: var(--item-bg); 
-            padding: 50px; 
-            border-radius: 48px; 
-            max-width: 580px; 
-            border: 2.5px solid var(--ios-red); 
-            box-shadow: 0 0 80px rgba(255, 59, 48, 0.400000); 
+        .alert-box {
+            background: var(--item-bg); padding: 50px; border-radius: 48px;
+            max-width: 580px; border: 2.5px solid var(--ios-red);
+            box-shadow: 0 0 80px rgba(255, 59, 48, 0.4);
         }
 
-        .result-card {
-            background: var(--item-bg); 
-            padding: 28px; 
-            border-radius: 32px; 
-            margin-bottom: 20px;
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            border: 1px solid var(--border-color); 
-            cursor: pointer; 
-            transition: transform 0.200000s, background 0.300000s;
+        /* INTELLIGENCE HUB COMPONENTS */
+        #comment-frame { position: fixed; inset: 0; z-index: 120000; pointer-events: none; display: flex; flex-direction: column; justify-content: flex-end; }
+        .chat-sheet { 
+            background: var(--bg-ui); width: 100%; height: 90vh; border-radius: 55px 55px 0 0; 
+            display: flex; flex-direction: column; transform: translateY(100%); 
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: auto; 
+            box-shadow: 0 -35px 90px rgba(0,0,0,0.6); border-top: 1.5px solid var(--border-color);
         }
-
-        .result-card:hover { background: rgba(0,122,255,0.050000); }
-        .result-card:active { transform: scale(0.980000); }
-
-        .system-marker { 
-            background: var(--accent); 
-            width: 14px; 
-            height: 14px; 
-            border-radius: 50.000000%; 
-            display: block; 
-            box-shadow: 0 0 12px var(--accent);
-        }
+        #comment-frame.active .chat-sheet { transform: translateY(0); }
     </style>
 </head>
 <body class="dark-mode">
@@ -471,6 +210,19 @@
             <p style="font-size: 15px; margin-top: 50px; opacity: 0.5;">
                 By accessing, you verify compliance with <span style="color:var(--accent); font-weight:700; cursor:pointer" onclick="toggleSecurityAlert(true)">Grid Protocols</span>
             </p>
+        </div>
+    </div>
+
+    <div id="security-alert">
+        <div class="alert-box">
+            <h2 style="color:var(--ios-red); font-size:32px; font-weight:900; margin-top:0;">GRID PROTOCOLS</h2>
+            <div style="color:var(--text-main); font-size:18px; line-height:1.6; max-height:300px; overflow-y:auto; margin-bottom:30px; text-align:left;">
+                <p><b>1. Data Integrity:</b> All intercepted node data is subject to encryption standards. Unauthorized manipulation of signal coordinates is prohibited.</p>
+                <p><b>2. Transmission Ethics:</b> Operators must ensure broadcast intelligence is verified before network synchronization.</p>
+                <p><b>3. Identity Masking:</b> Stealth mode is recommended for tactical operations in high-latency zones.</p>
+                <p><b>4. Surveillance Compliance:</b> This instance operates under Enterprise Matrix guidelines V6.2.0.</p>
+            </div>
+            <button style="background:var(--ios-red); color:white; border:none; padding:20px; border-radius:24px; width:100%; font-weight:800; font-size:18px;" onclick="toggleSecurityAlert(false)">ACKNOWLEDGE</button>
         </div>
     </div>
 
@@ -517,9 +269,7 @@
             <input type="text" id="search-input" placeholder="Coordinates, ID or Locale..." style="width:100%; padding:32px 38px; border-radius:38px; border:none; background:rgba(118,118,128,0.22); color:var(--text-main); font-size:26px; box-sizing: border-box; outline:none; border: 2.5px solid transparent; transition: 0.3s;">
         </div>
         <button onclick="executeGridSearch()" style="background:var(--accent); color:white; border:none; padding:30px; border-radius:38px; font-weight:900; font-size:26px; width:100%; margin-top:28px; box-shadow: var(--matrix-glow);">INITIATE SCAN</button>
-        
-        <div id="results-engine" style="margin-top:50px; flex:1; overflow-y:auto; padding-bottom: 60px;">
-            </div>
+        <div id="results-engine" style="margin-top:50px; flex:1; overflow-y:auto; padding-bottom: 60px;"></div>
     </div>
 
     <button class="fab btn-config" onclick="toggleConfig(true)">⚙️</button>
@@ -528,37 +278,12 @@
 
     <div id="map"></div>
 
-    <div id="comment-frame">
-        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.75); pointer-events:auto;" onclick="toggleComments(false)"></div>
-        <div class="chat-sheet">
-            <div style="height:8px; width:70px; background:var(--border-color); border-radius:20px; align-self:center; margin:25px 0;"></div>
-            <div style="padding:0 45px 35px 45px; border-bottom:1.8px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <h3 style="margin:0; font-size:36px; font-weight:900; letter-spacing: -1.8px;">Intel Hub</h3>
-                    <span id="active-node-id" style="font-family:var(--font-mono); opacity:0.5; font-size:17px;">NODE: STANDBY</span>
-                </div>
-                <button onclick="toggleComments(false)" style="background:rgba(118,118,128,0.2); border:none; width:60px; height:60px; border-radius:50%; font-size:24px; display:flex; align-items:center; justify-content:center;">✕</button>
-            </div>
-            
-            <div class="comm-list" id="intel-container" style="flex:1; overflow-y:auto; padding:45px;">
-                </div>
-
-            <div class="comm-input-area">
-                <input type="text" id="intel-input" placeholder="Broadcast intelligence..." style="flex:1; padding:26px 38px; border-radius:42px; border:none; background:rgba(118,118,128,0.18); color:var(--text-main); font-size:22px; outline:none; border: 1.5px solid transparent; transition: 0.3s;">
-                <button id="broadcast-trigger" onclick="transmitIntel()" style="background:var(--accent); color:white; border:none; width:75px; height:75px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow: var(--matrix-glow);">
-                    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
-                </button>
-            </div>
-        </div>
-    </div>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, Timestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // FIREBASE INSTANCE CONFIGURATION
         const firebaseConfig = {
             apiKey: "AIzaSyD-9mGZUB4m_vuc8mAATPtpiQdinb4nYx0",
             authDomain: "radar-database-3448b.firebaseapp.com",
@@ -573,20 +298,17 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // GLOBAL EXPOSURE FOR TACTICAL SCRIPTING
         window.db = db; window.collection = collection; window.addDoc = addDoc;
         window.query = query; window.where = where; window.orderBy = orderBy;
         window.getDocs = getDocs; window.Timestamp = Timestamp; window.onSnapshot = onSnapshot;
         window.auth = auth; window.signOut = signOut;
 
-        // AUTHENTICATION FLOW
         window.loginWithGoogle = async () => {
             try { 
                 window.dispatchNotification("Verification", "Authenticating Cloud Identity...", "info");
                 await signInWithPopup(auth, provider); 
             } catch (e) { 
                 window.dispatchNotification("Access Denied", "Identity verification failed.", "error"); 
-                console.error("Auth Exception:", e);
             }
         };
 
@@ -594,59 +316,58 @@
             try { await signOut(auth); location.reload(); } catch (e) { console.error(e); }
         };
 
-        // IDENTITY MONITORING
         onAuthStateChanged(auth, (user) => {
             const authOverlay = document.getElementById('auth-overlay');
-            const mapContainer = document.getElementById('map');
-            
             if (user) {
                 window.currentUser = user;
-                // TRANSITION: DISPLAY NONE PARA MANTER NO CÓDIGO MAS FORA DA VISTA
-                authOverlay.style.opacity = '0';
-                authOverlay.style.pointerEvents = 'none';
-                setTimeout(() => { 
-                    authOverlay.style.display = 'none'; 
-                    window.dispatchNotification("Grid Access", "Identity confirmed. Uplink stable.");
-                    initTacticalMap();
-                }, 800);
+                // CORREÇÃO: Aplica a classe que desativa pointer-events e visibility
+                authOverlay.classList.add('deactivated');
+                window.dispatchNotification("Grid Access", "Identity confirmed. Uplink stable.");
+                initTacticalMap();
             } else {
+                authOverlay.classList.remove('deactivated');
                 authOverlay.style.display = 'flex';
-                authOverlay.style.opacity = '1';
-                authOverlay.style.pointerEvents = 'auto';
             }
         });
     </script>
         <script>
-        /* ================================================================
+        /* ========================================================================
            TACTICAL GEOSPATIAL ENGINE - RADAR ULTRA PRO V6
-           ================================================================
+           ========================================================================
            Main Logic Unit for Node Interception and Grid Management.
+           ------------------------------------------------------------------------
         */
         let map, userMarker, gpsActive = false;
         let activeMarkers = [];
         let currentTargetNode = null;
+        let intelUnsubscribe = null;
 
         // INITIALIZE TACTICAL MAP ENVIRONMENT
         function initTacticalMap() {
             if (map) return;
 
+            // Constellation configuration for the Leaflet instance
             map = L.map('map', {
                 zoomControl: false,
                 attributionControl: false,
                 tap: false,
                 maxZoom: 19,
-                minZoom: 3
-            }).setView([-15.793889, -47.882778], 13); // Default: Brasília HQ
+                minZoom: 3,
+                inertia: true,
+                worldCopyJump: true
+            }).setView([-15.793889, -47.882778], 13);
 
+            // Dark Matter Vector Tiles
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                 subdomains: 'abcd',
                 maxZoom: 19
             }).addTo(map);
 
-            // SYNC PING MONITOR
+            // SYNC PING MONITOR (Simulated Grid Latency)
             setInterval(() => {
                 const ping = Math.floor(Math.random() * (45 - 12 + 1) + 12);
-                document.getElementById('ping-monitor').innerText = ping + " MS";
+                const monitor = document.getElementById('ping-monitor');
+                if(monitor) monitor.innerText = ping + " MS";
             }, 3000);
 
             // AUTO-SCAN ON IDLE
@@ -662,9 +383,12 @@
             const bMsg = document.getElementById('banner-msg');
             const bIcon = document.getElementById('banner-icon-box');
 
+            if(!banner || !bTitle || !bMsg) return;
+
             bTitle.innerText = title;
             bMsg.innerText = msg;
             
+            // UI Feedback based on event type
             if (type === "error") bIcon.style.background = "var(--ios-red)";
             else if (type === "success") bIcon.style.background = "var(--ios-green)";
             else bIcon.style.background = "var(--accent)";
@@ -673,7 +397,7 @@
             setTimeout(() => banner.classList.remove('active'), 4500);
         };
 
-        // GPS POSITIONING SYSTEM
+        // GPS POSITIONING SYSTEM (TACTICAL UPLINK)
         window.toggleTacticalGPS = () => {
             const btn = document.getElementById('locate-btn');
             if (!gpsActive) {
@@ -685,13 +409,17 @@
                 gpsActive = false;
                 btn.classList.remove('active');
                 map.stopLocate();
+                if(userMarker) map.removeLayer(userMarker);
+                userMarker = null;
                 window.dispatchNotification("GPS Standby", "Tracking disabled by operator.");
             }
         };
 
+        // Event listener for successful coordinate acquisition
         map?.on('locationfound', (e) => {
-            if (userMarker) userMarker.setLatLng(e.latlng);
-            else {
+            if (userMarker) {
+                userMarker.setLatLng(e.latlng);
+            } else {
                 userMarker = L.circleMarker(e.latlng, {
                     radius: 12,
                     fillColor: "#0a84ff",
@@ -703,7 +431,7 @@
             }
         });
 
-        // OVERPASS API SCANNER - NODE INTERCEPTION
+        // OVERPASS API SCANNER - NODE INTERCEPTION LOGIC
         window.executeGridSearch = async (isAuto = false) => {
             if (map.getZoom() < 13) {
                 if (!isAuto) window.dispatchNotification("Range Error", "Zoom in to scan for nodes.", "error");
@@ -711,6 +439,7 @@
             }
 
             const bounds = map.getBounds();
+            // Querying communication infrastructure nodes
             const query = `[out:json];node["communication:mobile_phone"="yes"](${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()});out;`;
             
             if (!isAuto) window.dispatchNotification("Scanning", "Intercepting local frequency nodes...");
@@ -724,9 +453,11 @@
                 renderNodes(data.elements);
             } catch (err) {
                 console.error("Grid Scan Failure:", err);
+                window.dispatchNotification("Link Failure", "Overpass API unreachable.", "error");
             }
         };
 
+        // Rendering Intercepted Nodes on the Tactical Grid
         function renderNodes(nodes) {
             activeMarkers.forEach(m => map.removeLayer(m));
             activeMarkers = [];
@@ -745,31 +476,33 @@
                 marker.on('click', () => openIntelligenceHub(node));
                 activeMarkers.push(marker);
 
-                // Populate search list if overlay is active
-                const card = document.createElement('div');
-                card.className = 'result-card';
-                card.innerHTML = `
-                    <div>
-                        <div style="font-weight:800; font-size:18px;">NODE #${node.id}</div>
-                        <div style="font-size:14px; opacity:0.6;">LAT: ${node.lat.toFixed(4)} LON: ${node.lon.toFixed(4)}</div>
-                    </div>
-                    <span class="system-marker"></span>
-                `;
-                card.onclick = () => {
-                    map.setView([node.lat, node.lon], 17);
-                    toggleSearch(false);
-                    openIntelligenceHub(node);
-                };
-                resultsEngine?.appendChild(card);
+                // Construct result card for the scanner panel
+                if (resultsEngine) {
+                    const card = document.createElement('div');
+                    card.className = 'result-card';
+                    card.innerHTML = `
+                        <div>
+                            <div style="font-weight:800; font-size:18px;">NODE #${node.id}</div>
+                            <div style="font-size:14px; opacity:0.6;">LAT: ${node.lat.toFixed(6)} | LON: ${node.lon.toFixed(6)}</div>
+                        </div>
+                        <span class="system-marker"></span>
+                    `;
+                    card.onclick = () => {
+                        map.setView([node.lat, node.lon], 17);
+                        toggleSearch(false);
+                        openIntelligenceHub(node);
+                    };
+                    resultsEngine.appendChild(card);
+                }
             });
         }
 
-        // INTELLIGENCE HUB & FIREBASE REAL-TIME
-        let intelUnsubscribe = null;
-
+        // INTELLIGENCE HUB (FIREBASE REAL-TIME SUBSCRIPTION)
         window.openIntelligenceHub = (node) => {
             currentTargetNode = node;
-            document.getElementById('active-node-id').innerText = `NODE: ${node.id}`;
+            const nodeIdEl = document.getElementById('active-node-id');
+            if(nodeIdEl) nodeIdEl.innerText = `NODE ID: ${node.id}`;
+            
             toggleComments(true);
             
             if (intelUnsubscribe) intelUnsubscribe();
@@ -782,6 +515,7 @@
 
             intelUnsubscribe = window.onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('intel-container');
+                if(!container) return;
                 container.innerHTML = '';
                 snapshot.forEach(doc => {
                     const data = doc.data();
@@ -799,9 +533,10 @@
             });
         };
 
+        // Broadcast local intelligence to the cloud grid
         window.transmitIntel = async () => {
             const input = document.getElementById('intel-input');
-            if (!input.value.trim() || !currentTargetNode) return;
+            if (!input || !input.value.trim() || !currentTargetNode) return;
 
             try {
                 await window.addDoc(window.collection(window.db, "intelligence"), {
@@ -817,7 +552,7 @@
             }
         };
 
-        // INTERFACE CONTROLS
+        // INTERFACE CONTROL LAYER
         window.toggleConfig = (show) => {
             const el = document.getElementById('config-overlay');
             if (show) { el.style.display = 'flex'; setTimeout(() => el.classList.add('active'), 10); }
@@ -836,10 +571,38 @@
             else el.classList.remove('active');
         };
 
+        window.toggleSecurityAlert = (show) => {
+            const el = document.getElementById('security-alert');
+            el.style.display = show ? 'flex' : 'none';
+        };
+
         window.applySystemTheme = (isDark) => {
             if (isDark) document.body.classList.add('dark-mode');
             else document.body.classList.remove('dark-mode');
         };
     </script>
+
+    <div id="comment-frame">
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.75); pointer-events:auto;" onclick="toggleComments(false)"></div>
+        <div class="chat-sheet">
+            <div style="height:8px; width:70px; background:var(--border-color); border-radius:20px; align-self:center; margin:25px 0;"></div>
+            <div style="padding:0 45px 35px 45px; border-bottom:1.8px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h3 style="margin:0; font-size:36px; font-weight:900; letter-spacing: -1.8px;">Intel Hub</h3>
+                    <span id="active-node-id" style="font-family:var(--font-mono); opacity:0.5; font-size:17px;">NODE: STANDBY</span>
+                </div>
+                <button onclick="toggleComments(false)" style="background:rgba(118,118,128,0.2); border:none; width:60px; height:60px; border-radius:50%; font-size:24px; display:flex; align-items:center; justify-content:center;">✕</button>
+            </div>
+            
+            <div class="comm-list" id="intel-container" style="flex:1; overflow-y:auto; padding:45px;"></div>
+
+            <div class="comm-input-area">
+                <input type="text" id="intel-input" placeholder="Broadcast intelligence..." style="flex:1; padding:26px 38px; border-radius:42px; border:none; background:rgba(118,118,128,0.18); color:var(--text-main); font-size:22px; outline:none;">
+                <button id="broadcast-trigger" onclick="transmitIntel()" style="background:var(--accent); color:white; border:none; width:75px; height:75px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow: var(--matrix-glow);">
+                    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
