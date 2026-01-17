@@ -19,6 +19,7 @@
             --safe-area-bottom: env(safe-area-inset-bottom);
             --transition-main: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
             --shadow-ios: 0 15px 35px rgba(0,0,0,0.2);
+            --matrix-glow: 0 0 15px rgba(10, 132, 255, 0.3);
         }
 
         body.dark-mode { 
@@ -43,7 +44,7 @@
             touch-action: none;
         }
 
-        /* --- MAP ENGINE --- */
+        /* --- MAP ENGINE LAYER --- */
         #map { 
             height: 100vh; 
             width: 100%; 
@@ -60,7 +61,7 @@
             pointer-events: none !important; 
         }
 
-        /* --- NOTIFICATION UI --- */
+        /* --- NOTIFICATION DYNAMICS --- */
         #ios-banner-system {
             position: fixed;
             top: -220px;
@@ -100,7 +101,7 @@
             box-shadow: 0 6px 18px rgba(0,0,0,0.2);
         }
 
-        /* --- LOADERS & BADGES --- */
+        /* --- SYSTEM LOADER --- */
         .loader-inline { 
             width: 36px; height: 36px; 
             border: 5px solid var(--border-color); 
@@ -116,7 +117,7 @@
         .bg-4g { background: #34c759; }
         .bg-3g { background: #ff9500; }
         
-        /* --- FULLSCREEN LAYERS --- */
+        /* --- FULLSCREEN COMPONENT OVERLAYS --- */
         .full-overlay { 
             position: fixed; 
             inset: 0; 
@@ -138,7 +139,7 @@
             transform: scale(1);
         }
 
-        /* --- FLOATING CONTROLS (POSIÇÃO ELEVADA) --- */
+        /* --- FLOATING ACTION BUTTONS (ELEVATED POSITIONS) --- */
         .fab { 
             position: absolute; width: 72px; height: 72px; border-radius: 26px; border: none; 
             cursor: pointer; display: flex; align-items: center; justify-content: center; 
@@ -158,7 +159,7 @@
         .btn-locate { bottom: 195px; right: 40px; }
         .btn-locate.active { background: var(--ios-green); color: white; border-color: transparent; }
 
-        /* --- CHAT MECHANICS --- */
+        /* --- CHAT SHEET MECHANICS --- */
         #comment-frame { position: fixed; inset: 0; z-index: 120000; pointer-events: none; display: flex; flex-direction: column; justify-content: flex-end; }
         .chat-sheet { 
             background: var(--bg-ui); width: 100%; height: 90vh; border-radius: 50px 50px 0 0; 
@@ -189,7 +190,7 @@
             backdrop-filter: blur(28px); align-items: center; 
         }
 
-        /* --- AUTH & SECURITY - AJUSTES PARA NÃO TRAVAR --- */
+        /* --- AUTHENTICATION OVERLAY --- */
         #auth-overlay { 
             position: fixed; inset: 0; 
             background: var(--bg-ui); 
@@ -198,7 +199,7 @@
             justify-content: center; 
             align-items: center; 
             transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), visibility 1s;
-            pointer-events: auto; /* IMPORTANTE: Começa ativo */
+            pointer-events: auto; 
         }
         .frame-auth { 
             background: var(--item-bg); padding: 55px 45px; border-radius: 50px; 
@@ -223,6 +224,9 @@
             border: 1px solid var(--border-color); cursor: pointer; transition: transform 0.2s;
         }
         .result-card:active { transform: scale(0.98); background: rgba(0,122,255,0.05); }
+
+        /* --- DOM INJECTION POINTS --- */
+        .system-marker { background: var(--accent); width: 12px; height: 12px; border-radius: 50%; display: block; }
     </style>
 </head>
 <body class="dark-mode">
@@ -260,6 +264,7 @@
             <button onclick="toggleToS(false)" class="google-btn" style="background:var(--accent); color:white; margin-top:40px;">I agree</button>
         </div>
     </div>
+
         <div id="security-alert">
         <div class="alert-box">
             <h2 style="color:var(--ios-red); margin-top:0; font-size: 32px; font-weight: 900;">Risk Detected</h2>
@@ -349,6 +354,7 @@
         import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // REDUNDANCY CHECK: DATABASE UPLINK INITIALIZATION
         const firebaseConfig = {
             apiKey: "AIzaSyD-9mGZUB4m_vuc8mAATPtpiQdinb4nYx0",
             authDomain: "radar-database-3448b.firebaseapp.com",
@@ -363,6 +369,7 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
+        // GLOBAL BINDING FOR LEGACY SCRIPT INTEROP
         window.db = db; window.collection = collection; window.addDoc = addDoc;
         window.query = query; window.where = where; window.orderBy = orderBy;
         window.getDocs = getDocs; window.Timestamp = Timestamp;
@@ -385,7 +392,7 @@
                 currentUser = user;
                 console.log(`[SYSTEM] Access Granted. User-UID: ${user.uid}`);
                 
-                /* FIX: Libera a interatividade da tela removendo o bloqueio do overlay */
+                // CRITICAL UI LIBERATION: Desativa o overlay e restaura eventos de ponteiro
                 authOverlay.style.opacity = '0';
                 authOverlay.style.visibility = 'hidden';
                 authOverlay.style.pointerEvents = 'none';
@@ -410,7 +417,7 @@
     </script>
 
     <script>
-        /* --- MAP CORE LOGIC --- */
+        /* --- MAP ENGINE CORE LOGIC --- */
         const map = L.map('map', { 
             zoomControl: false, 
             attributionControl: false,
@@ -555,5 +562,5 @@
         setTimeout(() => { map.invalidateSize(); alterarTema(true); }, 1200);
         console.log("[BOOT] Radar Ultra Pro Matrix 5.0.1 Ready.");
     </script>
-</body>
+    </body>
 </html>
