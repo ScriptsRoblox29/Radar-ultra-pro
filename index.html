@@ -7,121 +7,185 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
-            --ios-bg: #f2f2f7; --ios-item: #ffffff; --ios-text: #000000;
-            --ios-blue: #007aff; --ios-red: #ff3b30; --ios-gray: #8e8e93;
-            --map-filter: none;
-        }
-        body.dark-mode {
-            --ios-bg: #000000; --ios-item: #1c1c1e; --ios-text: #ffffff;
+            --ios-bg: #000000;
+            --ios-item: #1c1c1e;
+            --ios-text: #ffffff;
+            --ios-blue: #0a84ff;
+            --ios-red: #ff453a;
             --ios-gray: #48484a;
             --map-filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: -apple-system, system-ui, sans-serif; background: var(--ios-bg); color: var(--ios-text); overflow: hidden; width: 100vw; transition: background 0.3s; }
-        #map { height: 100vh; width: 100%; z-index: 1; filter: var(--map-filter); transition: filter 0.3s; }
 
-        .ios-frame { position: fixed; top: 0; left: 0; width: 100vw; height: 100%; background: var(--ios-bg); z-index: 10000; display: none; flex-direction: column; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        body.light-mode {
+            --ios-bg: #f2f2f7;
+            --ios-item: #ffffff;
+            --ios-text: #000000;
+            --ios-gray: #c7c7cc;
+            --map-filter: none;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            margin: 0; font-family: -apple-system, system-ui, sans-serif; 
+            background: var(--ios-bg); color: var(--ios-text); 
+            overflow: hidden; width: 100vw; height: 100vh;
+            transition: background 0.3s ease;
+        }
+        
+        #map { height: 100vh; width: 100%; z-index: 1; background: #000; filter: var(--map-filter); transition: filter 0.3s ease; }
+
+        .ios-frame { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100%; 
+            background: var(--ios-bg); z-index: 10000; display: none; 
+            flex-direction: column; transform: translateY(100%); 
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease; 
+        }
         .ios-frame.active { display: flex; transform: translateY(0); }
 
-        .g-btn { background: white; color: #3c4043; border: 1px solid #dadce0; padding: 12px 20px; border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 12px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 16px; margin: 20px auto; width: fit-content; }
-        .g-logo-svg { width: 18px; height: 18px; }
+        /* Profundidade: Login na frente de tudo */
+        #settings-frame { z-index: 15000; }
+        #profile-frame { z-index: 16000; }
+        #terms-frame { z-index: 17000; }
+        #login-frame { z-index: 25000; }
 
-        .toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: rgba(28,28,30,0.9); backdrop-filter: blur(15px); color: white; padding: 16px; border-radius: 20px; z-index: 50000; transition: top 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28); text-align: center; font-weight: 500; }
-        .toast.show { top: 60px; }
-        .loader { width: 24px; height: 24px; border: 3px solid var(--ios-gray); border-top-color: var(--ios-blue); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .tower-dot { width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
-        .dot-data { background: #34c759; } 
-        .dot-tv { background: #af52de; }   
-
-        #chat-frame { border-radius: 30px 30px 0 0; height: 85vh; top: 15vh; bottom: 0; position: fixed; }
-        .chat-header { padding: 20px; border-bottom: 0.5px solid var(--ios-gray); display: flex; justify-content: space-between; align-items: center; }
-        .chat-list { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 120px; }
-        .chat-input-bar { position: absolute; bottom: 0; width: 100%; padding: 15px 15px calc(15px + env(safe-area-inset-bottom)) 15px; background: var(--ios-item); border-top: 0.5px solid var(--ios-gray); display: flex; gap: 10px; z-index: 10; }
+        .btn-round { 
+            width: 56px; height: 56px; border-radius: 28px; 
+            background: var(--ios-item); border: none; font-size: 24px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5); 
+            display: flex; align-items: center; justify-content: center; 
+            position: fixed; z-index: 5000; cursor: pointer; color: var(--ios-text);
+        }
         
-        .btn-close-circle { width: 32px; height: 32px; background: var(--ios-gray); border-radius: 50%; border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        input[type="text"] { flex: 1; padding: 12px; border-radius: 20px; border: none; background: var(--ios-bg); color: var(--ios-text); font-size: 16px; outline: none; }
+        .toast { 
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%); 
+            width: 90%; max-width: 350px; background: rgba(44,44,46,0.95); 
+            backdrop-filter: blur(20px); color: white; padding: 16px; 
+            border-radius: 20px; z-index: 60000; text-align: center; 
+            transition: top 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            font-weight: 600; font-size: 14px;
+        }
+        .toast.show { top: 50px; }
 
-        .switch { position: relative; display: inline-block; width: 51px; height: 31px; }
+        .tower-dot { width: 16px; height: 16px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .dot-data { background: #32d74b; } 
+        .dot-tv { background: #bf5af2; }   
+
+        .chat-list { flex: 1; overflow-y: auto; padding: 20 (px); padding-bottom: 120px; }
+        .chat-input-bar { 
+            padding: 15px 20px calc(15px + env(safe-area-inset-bottom)); 
+            background: var(--ios-item); border-top: 0.5px solid var(--ios-gray); 
+            display: flex; gap: 12px; position: absolute; bottom: 0; width: 100%; 
+        }
+        input[type="text"] { 
+            flex: 1; padding: 12px 18px; border-radius: 24px; border: none; 
+            background: var(--ios-bg); color: var(--ios-text); font-size: 16px; outline: none;
+            border: 0.5px solid var(--ios-gray);
+        }
+        .tag-badge { 
+            display: inline-block; padding: 2px 8px; border-radius: 6px; 
+            background: var(--ios-gray); font-size: 10px; font-weight: 800; 
+            margin-right: 4px; color: #fff;
+        }
+        
+        .leaflet-popup-content-wrapper { background: var(--ios-item); color: var(--ios-text); border-radius: 15px; }
+        .leaflet-popup-tip { background: var(--ios-item); }
+
+        /* Profile Style */
+        .stat-box { text-align: center; flex: 1; }
+        .stat-num { font-weight: 800; font-size: 20px; display: block; }
+        .stat-label { font-size: 12px; opacity: 0.6; }
+
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 27px; width: 27px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #34c759; }
-        input:checked + .slider:before { transform: translateX(20px); }
-
-        .empty-state { text-align: center; padding: 40px 20px; opacity: 0.5; font-size: 14px; }
-        .loading-more { text-align: center; padding: 10px; font-size: 12px; opacity: 0.6; }
+        .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--ios-blue); }
+        input:checked + .slider:before { transform: translateX(22px); }
     </style>
 </head>
 <body>
     <div id="toast" class="toast"></div>
+    <div id="map"></div>
 
-    <div id="login-frame" class="ios-frame" style="display: flex; align-items: center; justify-content: center; text-align: center; padding: 30px;">
-        <button class="btn-close-circle" style="position: absolute; top: 50px; right: 20px;" onclick="toggleFrame('login-frame', false)">✕</button>
-        <div style="font-size: 60px;">🗼</div>
-        <p style="font-size: 20px; font-weight: 700; margin: 20px 0;">Radar Ultra Pro</p>
-        <p style="font-size: 16px; opacity: 0.8; margin-bottom: 30px;">Log in to join the community and see tower comments.</p>
-        <button class="g-btn" onclick="signIn()">
-            <svg class="g-logo-svg" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 12-4.53z" fill="#EA4335"/></svg>
-            Continue with Google
-        </button>
-        <p style="font-size: 12px; color: var(--ios-gray); margin-top: 15px;">By continuing, you agree to the <span style="text-decoration: underline; cursor: pointer;" onclick="toggleFrame('terms-frame', true)">terms of use</span>.</p>
+    <button class="btn-round" style="bottom: 40px; left: 25px;" onclick="toggleFrame('settings-frame', true)">⚙️</button>
+    <button class="btn-round" style="bottom: 40px; right: 25px;" onclick="getMyPos()">🎯</button>
+
+    <div id="login-frame" class="ios-frame" style="justify-content: center; align-items: center; padding: 40px;">
+        <div style="font-size: 70px; margin-bottom: 10px;">🗼</div>
+        <h1>Radar Ultra Pro</h1>
+        <p style="opacity: 0.6; text-align: center; margin-bottom: 40px;">Sign in to interact with the community.</p>
+        <button onclick="signIn()" style="width: 100%; max-width: 280px; padding: 16px; border-radius: 14px; border: none; background: var(--ios-text); color: var(--ios-bg); font-weight: 700; font-size: 16px; cursor: pointer;">Continue with Google</button>
+        <button onclick="toggleFrame('login-frame', false)" style="margin-top: 20px; background: none; border: none; color: var(--ios-blue); font-size: 16px;">Maybe Later</button>
     </div>
 
-    <div id="terms-frame" class="ios-frame" style="padding: 60px 25px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="margin:0;">Terms of Use</h2>
-            <button class="btn-close-circle" onclick="toggleFrame('terms-frame', false)">✕</button>
+    <div id="settings-frame" class="ios-frame" style="padding: 60px 25px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px;">
+            <h2 style="margin:0; font-size: 32px;">Settings</h2>
+            <button onclick="toggleFrame('settings-frame', false)" style="background:var(--ios-gray); border:none; color:white; width:32px; height:32px; border-radius:50%;">✕</button>
         </div>
-        <div style="margin-top: 30px; line-height: 1.6; font-size: 15px;">
-            <p>1. We will never store your location on our servers; it is only processed on your device.</p>
-            <p>2. Your Google account data will be stored on our server named 'Firebase' created by Google.</p>
-            <p>3. Offensive comments, spam, inappropriate, illegal, or false information are not allowed; your account will be permanently deactivated.</p>
-            <p>4. By continuing to use this site, you agree to these terms of service.</p>
-        </div>
-    </div>
-
-        <div id="settings-frame" class="ios-frame" style="padding: 60px 20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-            <h2 style="margin:0;">Settings</h2>
-            <button class="btn-close-circle" onclick="toggleFrame('settings-frame', false)">✕</button>
-        </div>
-        <div style="background:var(--ios-item); border-radius:14px; width:100%; overflow:hidden;">
-            <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; border-bottom:0.5px solid var(--ios-gray);">
+        <div style="background:var(--ios-item); border-radius:14px; overflow:hidden;">
+            <div style="padding:18px; display:flex; justify-content:space-between; border-bottom:0.5px solid var(--ios-gray); align-items: center;">
                 <span>Dark Mode</span>
                 <label class="switch">
-                    <input type="checkbox" id="dark-toggle" onclick="toggleDarkMode()">
+                    <input type="checkbox" id="dark-mode-toggle" checked onchange="toggleDarkMode()">
                     <span class="slider"></span>
                 </label>
             </div>
-            <div id="profile-btn" style="padding:15px; display:flex; justify-content:space-between;" onclick="showProfile()"><span>Account Profile</span><span>›</span></div>
+            <div style="padding:18px; border-bottom:0.5px solid var(--ios-gray);" onclick="toggleFrame('profile-frame', true)">About the profile <span style="float:right; opacity:0.3;">›</span></div>
+            <div style="padding:18px; border-bottom:0.5px solid var(--ios-gray);" onclick="toggleFrame('terms-frame', true)">Terms of Service <span style="float:right; opacity:0.3;">›</span></div>
+            <div id="auth-action" style="padding:18px; color:var(--ios-blue);" onclick="handleAuthClick()">Sign In</div>
         </div>
     </div>
 
-    <div id="chat-frame" class="ios-frame">
-        <div class="chat-header">
-            <span id="chat-tower-id" style="font-weight:600; font-size:12px; opacity:0.5;">TOWER ID: --</span>
-            <button class="btn-close-circle" onclick="toggleFrame('chat-frame', false)">✕</button>
+    <div id="profile-frame" class="ios-frame" style="padding: 60px 25px; align-items: center;">
+        <button onclick="toggleFrame('profile-frame', false)" style="align-self: flex-start; background:none; border:none; color:var(--ios-blue); font-size:18px; margin-bottom:30px;">‹ Back</button>
+        
+        <img id="p-photo" src="" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--ios-item); margin-bottom: 15px; background: #333; object-fit: cover;">
+        <h2 id="p-name" style="margin: 0; font-size: 22px;">Guest</h2>
+        <p id="p-email" style="opacity: 0.5; font-size: 14px; margin-bottom: 30px;">Not signed in</p>
+
+        <div style="display: flex; width: 100%; max-width: 300px; margin-bottom: 40px; border-top: 0.5px solid var(--ios-gray); border-bottom: 0.5px solid var(--ios-gray); padding: 20px 0;">
+            <div class="stat-box">
+                <span class="stat-num" id="p-likes">0</span>
+                <span class="stat-label">Likes</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-num" id="p-comments">0</span>
+                <span class="stat-label">Comments</span>
+            </div>
         </div>
-        <div id="chat-loading" class="loader"></div>
-        <div id="chat-list" class="chat-list" onscroll="handleScroll(this)"></div>
+        
+        <div style="width: 100%; opacity: 0.6; font-size: 13px; text-align: center;">Account synchronized with Google Cloud</div>
+    </div>
+
+    <div id="terms-frame" class="ios-frame" style="padding: 60px 25px;">
+        <button onclick="toggleFrame('terms-frame', false)" style="background:none; border:none; color:var(--ios-blue); font-size:18px; padding:0; margin-bottom:30px;">‹ Back</button>
+        <h2 style="margin-bottom:20px;">Terms of Service</h2>
+        <div style="line-height:1.6; opacity:0.9;">
+            <p>1. We will never store your location; it will only be processed on your device.</p>
+            <p>2. We will store your Google account data on a Firebase server in São Paulo that is owned by Google.</p>
+            <p>3. Comments containing false, offensive, spam, or illegal information are not allowed.</p>
+        </div>
+    </div>
+
+    <div id="chat-frame" class="ios-frame" style="height: 85vh; top: 15vh; border-radius: 30px 30px 0 0;">
+        <div style="padding: 20px; text-align: center; border-bottom: 0.5px solid var(--ios-gray);">
+            <div style="width: 40px; height: 5px; background: var(--ios-gray); border-radius: 3px; margin: 0 auto 15px;"></div>
+            <h3 id="chat-tower-name" style="margin:0; font-size: 18px;">Tower Chat</h3>
+            <small id="chat-tower-id" style="opacity: 0.5;"></small>
+        </div>
+        <div id="chat-list" class="chat-list"></div>
         <div class="chat-input-bar">
-            <input type="text" id="comm-input" maxlength="100" placeholder="Min. 10 characters..." oninput="checkInput()">
-            <button id="btn-send" disabled onclick="sendComment()" style="background:none; border:none; color:var(--ios-blue); font-weight:700; font-size:16px; opacity:0.3;">Send</button>
+            <input type="text" id="comm-input" placeholder="Join the conversation..." oninput="validateInput()">
+            <button id="send-btn" disabled onclick="sendComment()" style="background:none; border:none; color:var(--ios-blue); font-weight:700; opacity:0.3;">Send</button>
         </div>
     </div>
-
-    <button onclick="toggleFrame('settings-frame', true)" style="position:fixed; bottom:30px; left:20px; z-index:1000; width:54px; height:54px; border-radius:50%; background:var(--ios-item); border:none; font-size:24px; box-shadow:0 4px 15px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center;">⚙️</button>
-    <button onclick="getMyPos()" style="position:fixed; bottom:30px; right:20px; z-index:1000; width:54px; height:54px; border-radius:50%; background:var(--ios-item); border:none; font-size:24px; box-shadow:0 4px 15px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center;">🎯</button>
-    
-    <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, orderBy, limit, startAfter, getDocs, doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, orderBy, limit, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD-9mGZUB4m_vuc8mAATPtpiQdinb4nYx0",
@@ -137,124 +201,136 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        let currentUser = null, currentTowerId = null, lastVisible = null, isBatchLoading = false, hasMore = true;
-
-        // Load Settings from LocalStorage
-        window.addEventListener('DOMContentLoaded', () => {
-            if(localStorage.getItem('darkMode') === 'true') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('dark-toggle').checked = true;
-            }
-        });
+        let currentUser = null;
+        let activeTower = null;
 
         window.toggleDarkMode = () => {
-            const isDark = document.body.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', isDark);
+            const isDark = document.getElementById('dark-mode-toggle').checked;
+            document.body.classList.toggle('light-mode', !isDark);
         };
 
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, async user => {
             currentUser = user;
+            const authBtn = document.getElementById('auth-action');
             if (user) {
+                authBtn.innerText = "Sign Out";
+                authBtn.style.color = "var(--ios-red)";
+                
+                // Update Profile Info
+                document.getElementById('p-name').innerText = user.displayName;
+                document.getElementById('p-email').innerText = user.email;
+                document.getElementById('p-photo').src = user.photoURL;
+                
+                // Fetch User Stats
+                const q = query(collection(db, "comments"), where("userId", "==", user.uid));
+                const snap = await getDocs(q);
+                document.getElementById('p-comments').innerText = snap.size;
+
                 toggleFrame('login-frame', false);
-                const userRef = doc(db, "users", user.uid);
-                const snap = await getDoc(userRef);
-                if (!snap.exists()) await setDoc(userRef, { dailyCount: 0, lastPost: serverTimestamp(), commentCount: 0 });
             } else {
-                setTimeout(() => { if(!currentUser) toggleFrame('login-frame', true); }, 2000);
+                authBtn.innerText = "Sign In";
+                authBtn.style.color = "var(--ios-blue)";
             }
         });
 
+        window.handleAuthClick = () => {
+            if (currentUser) { signOut(auth).then(() => location.reload()); }
+            else { toggleFrame('login-frame', true); }
+        };
+
         window.signIn = async () => {
-            try { await signInWithPopup(auth, provider); showToast("Welcome back!"); } 
-            catch (e) { showToast("Sign-in failed."); }
+            try { await signInWithPopup(auth, provider); showToast("Welcome!"); } 
+            catch (e) { showToast("Error"); }
         };
 
-        const map = L.map('map', { zoomControl: false, tap: false }).setView([-15.78, -47.92], 4);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-15.78, -47.92], 4);
         const markersLayer = L.layerGroup().addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        window.openChat = (id) => {
-            currentTowerId = id;
-            lastVisible = null; hasMore = true;
-            document.getElementById('chat-list').innerHTML = "";
-            document.getElementById('chat-tower-id').innerText = `TOWER ID: ${id}`;
-            toggleFrame('chat-frame', true);
-            loadComments(true);
-        };
-
-        window.loadComments = async (isNew = false) => {
-            if (isBatchLoading || (!hasMore && !isNew)) return;
-            isBatchLoading = true;
-            const list = document.getElementById('chat-list');
-            const loader = document.getElementById('chat-loading');
-            if(isNew) loader.style.display = 'block';
-
-            let q = query(collection(db, "comments"), where("towerId", "==", currentTowerId), orderBy("createdAt", "desc"), limit(15));
-            if (!isNew && lastVisible) q = query(q, startAfter(lastVisible));
-
+        async function fetchTowers() {
+            if (map.getZoom() < 14) { markersLayer.clearLayers(); return; }
+            const bounds = map.getBounds();
+            const queryUrl = `[out:json][timeout:25];(node["man_made"~"mast|tower"](${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()}););out body;`;
             try {
-                const snap = await getDocs(q);
-                loader.style.display = 'none';
-                if (snap.empty) {
-                    if(isNew) list.innerHTML = `<div class="empty-state">No comments yet.</div>`;
-                    hasMore = false;
-                } else {
-                    lastVisible = snap.docs[snap.docs.length - 1];
-                    if (snap.docs.length < 15) hasMore = false;
-                    snap.forEach(d => {
-                        const c = d.data();
-                        const item = document.createElement('div');
-                        item.style = "background:var(--ios-item);padding:12px;border-radius:15px;margin-bottom:10px;display:flex;gap:12px;";
-                        item.innerHTML = `<img src="${c.userPhoto}" style="width:36px;height:36px;border-radius:50%;"><div><b>${c.username || 'User'}</b><p style="margin:4px 0;font-size:14px;">${c.text}</p></div>`;
-                        list.appendChild(item);
-                    });
-                }
-            } catch (e) { showToast("Error loading comments."); }
-            isBatchLoading = false;
+                const res = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(queryUrl));
+                const data = await res.json();
+                markersLayer.clearLayers();
+                data.elements.forEach(el => {
+                    const isTv = el.tags?.service === 'television' || el.tags?.['tower:type'] === 'communication';
+                    const colorClass = isTv ? 'dot-tv' : 'dot-data';
+                    const operator = el.tags?.operator || el.tags?.brand || 'Tower';
+                    const techs = [];
+                    if(el.tags?.['communication:4g'] === 'yes') techs.push('4G');
+                    if(el.tags?.['communication:5g'] === 'yes') techs.push('5G');
+                    const tagsHtml = techs.map(t => `<span class="tag-badge">${t}</span>`).join('') || '<span class="tag-badge">GSM</span>';
+
+                    const marker = L.marker([el.lat, el.lon], {
+                        icon: L.divIcon({ className: `tower-dot ${colorClass}` })
+                    }).addTo(markersLayer);
+
+                    marker.bindPopup(`
+                        <div style="text-align:left;">
+                            <strong>${operator}</strong><br>
+                            <small>ID: ${el.id}</small><br>
+                            <div style="margin:5px 0;">${tagsHtml}</div>
+                            <button onclick="openChat('${el.id}', '${operator}')" style="width:100%; padding:8px; border-radius:8px; border:none; background:var(--ios-blue); color:white; font-weight:700; cursor:pointer;">Open Chat</button>
+                        </div>
+                    `);
+                });
+            } catch (e) {}
+        }
+
+        window.openChat = async (id, name) => {
+            if (!currentUser) { showToast("Sign in first"); toggleFrame('login-frame', true); return; }
+            activeTower = id;
+            document.getElementById('chat-tower-name').innerText = name;
+            document.getElementById('chat-tower-id').innerText = `ID: ${id}`;
+            toggleFrame('chat-frame', true);
+            loadComments(id);
         };
 
-        window.handleScroll = (el) => {
-            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 20) loadComments(false);
-        };
+        async function loadComments(towerId) {
+            const q = query(collection(db, "comments"), where("towerId", "==", towerId), orderBy("createdAt", "desc"), limit(20));
+            const snap = await getDocs(q);
+            const list = document.getElementById('chat-list');
+            list.innerHTML = snap.empty ? `<div style="text-align:center; padding:40px; opacity:0.3;">Be the first to talk!</div>` : "";
+            snap.forEach(doc => {
+                const data = doc.data();
+                const div = document.createElement('div');
+                div.style = "margin-bottom:15px; display:flex; gap:10px;";
+                div.innerHTML = `<img src="${data.userPhoto}" style="width:32px; height:32px; border-radius:50%;"><div><div style="font-size:11px; font-weight:700; opacity:0.5;">${data.userName}</div><div style="background:var(--ios-item); padding:8px 12px; border-radius:15px; margin-top:2px; font-size:14px; border: 0.5px solid var(--ios-gray);">${data.text}</div></div>`;
+                list.appendChild(div);
+            });
+        }
 
         window.sendComment = async () => {
-            if(!currentUser) return showToast("Login required.");
             const input = document.getElementById('comm-input');
             const text = input.value.trim();
-            try {
-                await addDoc(collection(db, "comments"), {
-                    towerId: currentTowerId, text, userId: currentUser.uid,
-                    username: currentUser.displayName, userPhoto: currentUser.photoURL,
-                    createdAt: serverTimestamp()
-                });
-                await updateDoc(doc(db, "users", currentUser.uid), { commentCount: increment(1), lastPost: serverTimestamp() });
-                input.value = ""; checkInput(); showToast("Sent!");
-                openChat(currentTowerId); // Reload automatic
-            } catch (e) { showToast("Wait 15s to post again."); }
+            if(text.length < 10) return;
+            await addDoc(collection(db, "comments"), { towerId: activeTower, text, userId: currentUser.uid, userName: currentUser.displayName, userPhoto: currentUser.photoURL, createdAt: serverTimestamp() });
+            input.value = ""; validateInput(); loadComments(activeTower);
         };
 
         window.toggleFrame = (id, show) => {
-            const f = document.getElementById(id);
-            if(show) { f.style.display = 'flex'; setTimeout(() => f.classList.add('active'), 10); }
-            else { f.classList.remove('active'); setTimeout(() => { if(!f.classList.contains('active')) f.style.display = 'none'; }, 400); }
+            const el = document.getElementById(id);
+            if(show) { el.style.display = 'flex'; setTimeout(() => el.classList.add('active'), 10); }
+            else { el.classList.remove('active'); setTimeout(() => el.style.display = 'none', 400); }
         };
 
-        window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
-        window.checkInput = () => { const v = document.getElementById('comm-input').value.trim(); const b = document.getElementById('btn-send'); b.disabled = v.length < 10; b.style.opacity = v.length >= 10 ? "1" : "0.3"; };
-        window.getMyPos = () => navigator.geolocation.getCurrentPosition(p => map.setView([p.coords.latitude, p.coords.longitude], 16));
-        window.carregarTorres = async () => {
-            if (map.getZoom() < 14) return;
-            const b = map.getBounds();
-            const q = `[out:json][timeout:25];(node["man_made"~"mast|tower"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}););out body;`;
-            const res = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(q));
-            const data = await res.json();
-            markersLayer.clearLayers();
-            data.elements.forEach(el => {
-                const marker = L.marker([el.lat, el.lon], { icon: L.divIcon({ className: `tower-dot dot-data` }) }).addTo(markersLayer);
-                marker.bindPopup(`<div style="color:black;"><b>Tower ${el.id}</b><br><button onclick="openChat('${el.id}')" style="width:100%;background:var(--ios-blue);color:white;border:none;padding:8px;border-radius:8px;margin-top:8px;">Open Chat</button></div>`);
-            });
+        window.showToast = (msg) => {
+            const t = document.getElementById('toast'); t.innerText = msg; 
+            t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500);
         };
-        map.on('moveend', carregarTorres);
+
+        window.validateInput = () => {
+            const val = document.getElementById('comm-input').value.trim();
+            const btn = document.getElementById('send-btn');
+            btn.disabled = val.length < 10; btn.style.opacity = val.length < 10 ? 0.3 : 1;
+        };
+
+        window.getMyPos = () => { map.locate({setView: true, maxZoom: 16}); };
+        map.on('moveend', fetchTowers);
+        fetchTowers();
     </script>
 </body>
 </html>
