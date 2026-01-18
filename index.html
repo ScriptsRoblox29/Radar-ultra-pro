@@ -48,7 +48,7 @@
 
         #map { height: 100vh; width: 100%; z-index: var(--layer-map); position: absolute; top: 0; left: 0; background: #111; }
 
-        /* IOS BANNER */
+        /* IOS BANNER SYSTEM */
         #ios-banner-system {
             position: fixed; top: -220px; left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 440px; background: var(--blur-bg);
@@ -58,6 +58,12 @@
             box-shadow: 0 25px 60px rgba(0,0,0,0.35); transition: var(--transition-main);
         }
         #ios-banner-system.active { top: 45px; }
+
+        .banner-icon {
+            width: 52px; height: 52px; border-radius: 16px; display: flex;
+            align-items: center; justify-content: center; font-size: 26px;
+            flex-shrink: 0; box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+        }
 
         /* AUTH & TOS OVERLAY (RESTAURADO COMPLETO) */
         #auth-overlay { 
@@ -89,11 +95,29 @@
         }
         #comment-frame.active .chat-sheet { transform: translateY(0); }
 
+        /* ITEM DE COMENTÁRIO CORRIGIDO */
         .comm-item { 
             background: var(--item-bg); padding: 24px; border-radius: 30px; margin-bottom: 20px; 
-            display: grid; grid-template-columns: 60px 1fr 50px; grid-template-rows: auto auto auto; gap: 2px 15px;
+            display: flex; gap: 20px; align-items: flex-start;
             border: 0.8px solid var(--border-color); box-shadow: 0 6px 22px rgba(0,0,0,0.07);
         }
+
+        .comm-avatar { 
+            width: 58px; height: 58px; border-radius: 50%; border: 3.5px solid var(--accent); 
+            object-fit: cover; background: #e5e5ea; flex-shrink: 0;
+        }
+
+        .comm-content { flex: 1; }
+        .comm-user { font-weight: 800; font-size: 16px; color: var(--accent); margin-bottom: 6px; }
+        .comm-txt { font-size: 17px; color: var(--text-main); line-height: 1.6; }
+
+        .full-overlay { 
+            position: fixed; inset: 0; background: var(--bg-ui); z-index: 95000; 
+            display: none; flex-direction: column; padding: 70px 40px; box-sizing: border-box;
+            overflow-y: auto; opacity: 0; transform: scale(1.1);
+            transition: all 0.6s cubic-bezier(0.2, 0.9, 0.2, 1);
+        }
+        .full-overlay.active { display: flex; opacity: 1; transform: scale(1); }
 
         /* FABS */
         .fab { 
@@ -101,6 +125,7 @@
             cursor: pointer; display: flex; align-items: center; justify-content: center; 
             z-index: var(--layer-fab); background: var(--blur-bg); backdrop-filter: blur(28px);
             transition: var(--transition-main); font-size: 28px; color: var(--text-main);
+            box-shadow: 0 18px 45px rgba(0,0,0,0.4);
         }
         .btn-search { bottom: 100px; right: 40px; background: var(--accent); color: white; border: none; }
         .btn-config { bottom: 100px; left: 40px; }
@@ -111,9 +136,14 @@
             position: fixed; inset: 0; background: rgba(0,0,0,0.94); z-index: 900000; 
             display: none; justify-content: center; align-items: center; padding: 40px; backdrop-filter: blur(15px); 
         }
+        .alert-box { 
+            background: var(--item-bg); padding: 45px; border-radius: 45px; max-width: 550px; 
+            border: 2.5px solid var(--ios-red); box-shadow: 0 0 60px rgba(255, 59, 48, 0.35); 
+        }
     </style>
 </head>
-<body class="dark-mode"> <div id="ios-banner-system">
+<body class="dark-mode">
+    <div id="ios-banner-system">
         <div id="banner-icon-box" class="banner-icon">📡</div>
         <div style="flex: 1;">
             <b id="banner-title" style="display: block; font-size: 19px; letter-spacing: -0.7px;">Radar Ultra Pro</b>
@@ -148,7 +178,8 @@
             <button onclick="toggleToS(false)" class="google-btn" style="background:var(--accent); color:white; margin-top:40px;">I AGREE</button>
         </div>
     </div>
-        <div id="security-alert">
+
+    <div id="security-alert">
         <div class="alert-box">
             <h2 style="color:var(--ios-red); margin-top:0; font-size: 32px; font-weight: 900;">Risk Detected</h2>
             <p style="font-size: 19px; font-weight:600;">Intercepted Link:</p>
@@ -168,7 +199,6 @@
             <h2 style="font-size: 42px; font-weight: 900; letter-spacing: -2px; margin:0;">Settings</h2>
             <button style="background:rgba(118,118,128,0.2); border:none; padding:16px 26px; border-radius:24px; color:var(--accent); font-weight:800; font-size:18px;" onclick="toggleConfig(false)">Done</button>
         </div>
-        
         <div style="background:var(--item-bg); padding:32px; border-radius:35px; display:flex; justify-content:space-between; align-items:center; border: 1.5px solid var(--border-color); margin-bottom: 30px;">
             <div style="display:flex; align-items:center; gap:20px;">
                 <div style="background: #5856d6; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; font-size:22px;">🌙</div>
@@ -176,32 +206,7 @@
             </div>
             <input type="checkbox" id="dark-mode-toggle" onchange="alterarTema(this.checked)" checked style="width:36px; height:36px; accent-color: var(--accent);">
         </div>
-
-        <div style="background:var(--item-bg); padding:35px; border-radius:35px; border: 1.5px solid var(--border-color); opacity: 0.8;">
-            <h4 style="margin: 0 0 18px 0; font-size: 15px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">System Info</h4>
-            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                <span style="font-weight:600; font-size: 18px;">Core Version</span>
-                <span style="font-family: monospace; font-size: 18px;">6.5.0-STABLE</span>
-            </div>
-            <div style="display:flex; justify-content:space-between;">
-                <span style="font-weight:600; font-size: 18px;">Network Latency</span>
-                <span id="ping-val" style="color:var(--ios-green); font-size: 18px; font-weight: 900;">-- ms</span>
-            </div>
-        </div>
-        
         <p style="margin-top:auto; font-size:15px; opacity:0.4; text-align:center; font-weight:700; line-height: 1.6;">G.S.I.N. - GLOBAL SIGNAL INTELLIGENCE NETWORK<br>© 2026 ENTERPRISE SYSTEMS - MATRIX V8</p>
-    </div>
-
-    <div id="search-overlay" class="full-overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px;">
-            <h2 style="font-size: 42px; font-weight: 900; letter-spacing: -2px; margin:0;">Search</h2>
-            <button style="background:none; border:none; color:var(--accent); font-weight:800; font-size:20px;" onclick="toggleSearch(false)">Cancel</button>
-        </div>
-        <div style="position:relative; margin-bottom:35px;">
-            <input type="text" id="search-input" placeholder="Coordinate, City or Station ID..." style="width:100%; padding:26px 30px; border-radius:32px; border:none; background:rgba(118,118,128,0.18); color:var(--text-main); font-size:22px; outline:none; box-sizing: border-box; font-weight: 500;">
-        </div>
-        <button onclick="realizarPesquisa()" id="btn-search-action" style="background:var(--accent); color:white; border:none; padding:26px; border-radius:32px; font-weight:900; font-size:22px; width:100%; box-shadow: 0 12px 35px rgba(0,122,255,0.45); transition: all 0.4s;">SCAN GRID</button>
-        <div id="results-list" style="margin-top:45px; flex:1; overflow-y:auto; padding-bottom:60px;"></div>
     </div>
 
     <div id="comment-frame">
@@ -211,20 +216,13 @@
             <div style="padding:0 40px 30px 40px; border-bottom:1.5px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
                 <div>
                     <h3 id="comm-tower-title" style="margin:0; font-size:30px; font-weight:900; letter-spacing: -1.5px;">Intelligence Hub</h3>
-                    <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
-                        <span id="node-sync-dot" style="width:12px; height:12px; background:var(--ios-green); border-radius:50%; box-shadow: 0 0 12px var(--ios-green);"></span>
-                        <span style="font-size:15px; font-weight:700; opacity:0.6; text-transform: uppercase;">Node Link Active</span>
-                    </div>
                 </div>
                 <button onclick="toggleComments(false)" style="background:rgba(118,118,128,0.18); border:none; width:48px; height:48px; border-radius:50%; font-weight:900; color:var(--text-main); font-size:22px;">✕</button>
             </div>
-            
-            <div class="comm-list" id="comm-container" style="flex:1; overflow-y:auto; padding:40px; -webkit-overflow-scrolling:touch;">
-                </div>
-            
-            <div class="comm-input-area">
+            <div class="comm-list" id="comm-container" style="flex:1; overflow-y:auto; padding:40px;"></div>
+            <div style="padding: 22px 28px; border-top: 1.2px solid var(--border-color); display: flex; gap: 18px; background: var(--blur-bg); align-items: center;">
                 <input type="text" id="comm-input" placeholder="Broadcast intelligence..." style="flex:1; padding:22px 32px; border-radius:35px; border:none; background:rgba(118,118,128,0.15); color:var(--text-main); font-size:19px; outline:none; font-weight: 500;">
-                <button id="btn-send-comm" onclick="enviarComentarioFirebase()" style="background:var(--accent); color:white; border:none; width:65px; height:65px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow: 0 10px 25px rgba(0,122,255,0.45);">
+                <button onclick="enviarComentarioFirebase()" style="background:var(--accent); color:white; border:none; width:65px; height:65px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow: 0 10px 25px rgba(0,122,255,0.45);">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
                 </button>
             </div>
@@ -239,10 +237,9 @@
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // ENTERPRISE FIREBASE CONFIGURATION
         const firebaseConfig = {
             apiKey: "AIzaSyD-9mGZUB4m_vuc8mAATPtpiQdinb4nYx0",
             authDomain: "radar-database-3448b.firebaseapp.com",
@@ -260,46 +257,39 @@
         let map, activeMarkers = [], currentTowerId = null, unsubscribeComments = null;
         let currentUser = null;
 
-        // --- THEME ENGINE (DARK DEFAULT) ---
+        // --- THEME ---
         window.alterarTema = (isDark) => {
             document.body.classList.toggle('dark-mode', isDark);
-            const url = isDark 
-                ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' 
-                : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+            const url = isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
             if(window.tileLayer) window.tileLayer.setUrl(url);
-            localStorage.setItem('matrix_theme', isDark ? 'dark' : 'light');
         };
 
-        // --- AUTH & TOS LOGIC ---
+        // --- AUTH ---
         window.toggleToS = (show) => {
             document.getElementById('login-frame').style.display = show ? 'none' : 'block';
             document.getElementById('tos-frame').style.display = show ? 'block' : 'none';
         };
 
         window.loginWithGoogle = async () => {
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (e) {
-                window.iosNotify("Auth Error", e.message, "error");
-            }
+            try { await signInWithPopup(auth, provider); } catch (e) { window.iosNotify("Auth Error", e.message, "error"); }
         };
 
         onAuthStateChanged(auth, (user) => {
             const overlay = document.getElementById('auth-overlay');
             if (user) {
                 currentUser = user;
-                overlay.style.opacity = '0';
-                setTimeout(() => { overlay.style.visibility = 'hidden'; overlay.style.zIndex = '0'; }, 1000);
+                // REMOÇÃO DO DELAY E DO FRAME PRETO/TRANSPARENTE APÓS LOGIN
+                overlay.style.display = 'none'; 
                 initMatrixMap();
                 window.iosNotify("Secure Access", `Welcome, Agent ${user.displayName.split(' ')[0]}`);
             } else {
-                overlay.style.visibility = 'visible';
-                overlay.style.zIndex = '600000';
+                overlay.style.display = 'flex';
                 overlay.style.opacity = '1';
+                overlay.style.visibility = 'visible';
             }
         });
 
-        // --- INTELLIGENCE HUB (FIREBASE COMMENTS) ---
+        // --- INTELLIGENCE HUB ---
         window.openReports = (towerId) => {
             currentTowerId = towerId;
             document.getElementById('comm-tower-title').innerText = `Node #${towerId}`;
@@ -309,67 +299,47 @@
 
         function syncComments(towerId) {
             const container = document.getElementById('comm-container');
-            container.innerHTML = '<div style="text-align:center; padding:80px;"><div class="loader-inline"></div></div>';
-
+            container.innerHTML = '<p style="text-align:center; opacity:0.5;">Connecting to node...</p>';
             if (unsubscribeComments) unsubscribeComments();
 
-            const q = query(
-                collection(db, "comments"),
-                where("towerId", "==", towerId),
-                orderBy("createdAt", "desc")
-            );
-
+            const q = query(collection(db, "comments"), where("towerId", "==", towerId), orderBy("createdAt", "desc"));
             unsubscribeComments = onSnapshot(q, (snapshot) => {
                 container.innerHTML = '';
-                if (snapshot.empty) {
-                    container.innerHTML = '<div style="text-align:center; opacity:0.3; padding:80px;"><h3>Node Isolated</h3><p>No agent reports found.</p></div>';
-                    return;
-                }
+                if (snapshot.empty) { container.innerHTML = '<p style="text-align:center; opacity:0.3;">No agent reports found.</p>'; return; }
                 snapshot.forEach(docSnap => {
                     const d = docSnap.data();
                     const item = document.createElement('div');
                     item.className = 'comm-item';
                     item.innerHTML = `
-                        <img src="${d.userPhoto || ''}" class="comm-avatar" onerror="this.src='https://ui-avatars.com/api/?name=Agent'">
+                        <img src="${d.userPhoto || 'https://ui-avatars.com/api/?name=Agent'}" class="comm-avatar">
                         <div class="comm-content">
                             <div class="comm-user">${d.username || 'Anonymous Agent'}</div>
                             <div class="comm-txt">${d.text}</div>
-                        </div>
-                    `;
+                        </div>`;
                     container.appendChild(item);
                 });
-            }, (error) => {
-                container.innerHTML = `<p style="color:var(--ios-red); text-align:center; padding:20px;">Protocol Error: ${error.code}</p>`;
-            });
+            }, (error) => { container.innerHTML = `<p style="color:var(--ios-red);">Protocol Error: ${error.code}</p>`; });
         }
 
         window.enviarComentarioFirebase = async () => {
             const input = document.getElementById('comm-input');
             const val = input.value.trim();
             if (val.length < 3) return;
-
             try {
                 await addDoc(collection(db, "comments"), {
-                    text: val,
-                    towerId: currentTowerId,
-                    userId: currentUser.uid,
-                    username: currentUser.displayName,
-                    userPhoto: currentUser.photoURL,
-                    likes: 0,
+                    text: val, towerId: currentTowerId, userId: currentUser.uid,
+                    username: currentUser.displayName, userPhoto: currentUser.photoURL,
                     createdAt: serverTimestamp()
                 });
                 input.value = '';
-            } catch (e) {
-                window.iosNotify("Broadcast Failed", e.message, "error");
-            }
+            } catch (e) { window.iosNotify("Broadcast Failed", e.message, "error"); }
         };
 
-        // --- MAPPING ENGINE ---
+        // --- MAP SCANNER ---
         function initMatrixMap() {
             if (map) return;
             map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-15.7942, -47.8822], 4);
             window.tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
-            
             map.on('moveend', () => { if (map.getZoom() >= 13) scanGrid(); });
         }
 
@@ -393,47 +363,17 @@
             });
         }
 
-        // --- UI UTILITIES ---
         window.toggleConfig = (s) => document.getElementById('config-overlay').classList.toggle('active', s);
         window.toggleSearch = (s) => document.getElementById('search-overlay').classList.toggle('active', s);
         window.toggleComments = (s) => document.getElementById('comment-frame').classList.toggle('active', s);
-
         window.iosNotify = (title, msg, type = 'success') => {
             const banner = document.getElementById('ios-banner-system');
             document.getElementById('banner-title').innerText = title;
             document.getElementById('banner-msg').innerText = msg;
-            document.getElementById('banner-icon-box').style.background = type === 'error' ? '#ff3b30' : '#007aff';
             banner.classList.add('active');
             setTimeout(() => banner.classList.remove('active'), 5000);
         };
-
-        window.toggleGPS = () => {
-            map.locate({setView: true, maxZoom: 16});
-            window.iosNotify("GPS", "Synchronizing satellite coordinates...");
-        };
-
-        // --- SECURITY DECRYPTION COUNTER ---
-        window.triggerSecurityAlert = (url) => {
-            const alert = document.getElementById('security-alert');
-            const btn = document.getElementById('btn-proceed-risk');
-            const urlDisplay = document.getElementById('malicious-url-display');
-            urlDisplay.innerText = url;
-            alert.style.display = 'flex';
-            
-            let count = 10;
-            const timer = setInterval(() => {
-                count--;
-                btn.innerText = `Decoding (${count}s)...`;
-                if(count <= 0) {
-                    clearInterval(timer);
-                    btn.innerText = "Proceed to Endpoint";
-                    btn.disabled = false;
-                    btn.style.background = "var(--ios-red)";
-                    btn.style.color = "white";
-                    btn.style.cursor = "pointer";
-                }
-            }, 1000);
-        };
+        window.toggleGPS = () => { map.locate({setView: true, maxZoom: 16}); };
     </script>
 </body>
 </html>
