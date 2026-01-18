@@ -6,17 +6,15 @@
     <meta name="theme-color" content="#000000" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>Radar Ultra Pro - Version 6.2.0 (Enterprise Matrix)</title>
+    <title>Radar Ultra Pro - Enterprise Matrix V6.2.0</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
         /* ========================================================================
-           RADAR ULTRA PRO - SYSTEM CORE ARCHITECTURE
+           RADAR ULTRA PRO - ARCHITECTURAL STYLING ENGINE
+           MODULE: UX_FRAMEWORK_CORE
            ========================================================================
-           VERSION: 6.2.0-STABLE | BUILD: 2026.01.17
-           MODULE: UI/UX ROOT DEFINITIONS & ARCHITECTURAL HIERARCHY
-           ------------------------------------------------------------------------
         */
 
         :root { 
@@ -29,16 +27,9 @@
             --ios-red: #ff3b30;
             --ios-green: #34c759;
             --ios-orange: #ff9500;
-            --matrix-blue: #0a84ff;
-            --matrix-glow: 0 0 25px rgba(0, 122, 255, 0.45);
-            --transition-main: all 0.50s cubic-bezier(0.16, 1, 0.3, 1);
-            --transition-elastic: all 0.75s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            --layer-map: 10;
-            --layer-fab: 500;
-            --layer-panel: 1000;
-            --layer-overlay: 5000;
-            --layer-auth: 10000;
-            --layer-system: 99999;
+            --matrix-glow: 0 10px 40px rgba(0, 122, 255, 0.3);
+            --transition-panel: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            --safe-bottom: env(safe-area-inset-bottom);
         }
 
         body.dark-mode { 
@@ -47,111 +38,126 @@
             --item-bg: #1c1c1e; 
             --border-color: rgba(84, 84, 88, 0.65); 
             --accent: #0a84ff; 
-            --backdrop-color: rgba(28, 28, 30, 0.85); 
+            --backdrop-color: rgba(28, 28, 30, 0.9); 
         }
 
         body { 
             margin: 0; padding: 0; 
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif; 
             background: var(--bg-ui); color: var(--text-main); 
             overflow: hidden; height: 100vh; width: 100vw;
             position: fixed; touch-action: none; -webkit-user-select: none;
         }
 
-        #map { height: 100%; width: 100%; z-index: var(--layer-map); position: absolute; top: 0; left: 0; background: #000; }
-
-        /* NOTIFICATION BANNER */
-        #ios-banner-system {
-            position: fixed; top: -250px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 440px; background: var(--backdrop-color);
-            backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
-            border: 0.5px solid var(--border-color); padding: 22px; border-radius: 38px;
-            z-index: var(--layer-system); transition: var(--transition-main);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 15px;
+        #map { 
+            height: 100%; width: 100%; 
+            z-index: 10; position: absolute; top: 0; left: 0; 
+            filter: contrast(1.1) brightness(0.9);
         }
-        #ios-banner-system.active { top: 60px; }
-        .banner-icon { width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; background: var(--accent); color: white; flex-shrink: 0; }
 
-        /* OVERLAYS & SCROLLING FRAMES */
+        /* NOTIFICATION SYSTEM */
+        #ios-banner-system {
+            position: fixed; top: -300px; left: 50%; transform: translateX(-50%);
+            width: 92%; max-width: 500px; background: var(--backdrop-color);
+            backdrop-filter: blur(50px) saturate(210%); -webkit-backdrop-filter: blur(50px) saturate(210%);
+            border: 0.5px solid var(--border-color); padding: 25px; border-radius: 40px;
+            z-index: 99999; transition: var(--transition-panel);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 20px;
+        }
+        #ios-banner-system.active { top: 70px; }
+        .banner-icon { width: 55px; height: 55px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 26px; background: var(--accent); color: white; flex-shrink: 0; }
+
+        /* FULL OVERLAY ARCHITECTURE */
         .full-overlay { 
             position: fixed; inset: 0; background: var(--bg-ui); 
-            z-index: var(--layer-overlay); display: none; 
-            flex-direction: column; padding: 80px 30px; 
-            opacity: 0; transform: translateY(30px);
-            transition: opacity 0.4s ease, transform 0.4s ease;
+            z-index: 5000; display: none; 
+            flex-direction: column; padding: 100px 40px; 
+            opacity: 0; transform: scale(1.05);
+            transition: opacity 0.5s ease, transform 0.5s ease;
         }
-        .full-overlay.active { display: flex; opacity: 1; transform: translateY(0); }
+        .full-overlay.active { display: flex; opacity: 1; transform: scale(1); }
 
-        /* SCROLLING FRAME IMPLEMENTATION */
         .scrolling-frame {
             flex: 1;
             overflow-y: auto;
             overflow-x: hidden;
-            padding-right: 10px;
-            padding-bottom: 120px;
+            padding-bottom: 150px;
+            scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
         }
-        .scrolling-frame::-webkit-scrollbar { width: 4px; }
-        .scrolling-frame::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        .scrolling-frame::-webkit-scrollbar { display: none; }
 
-        /* CHAT / INTEL HUB STYLING */
+        /* INTEL HUB / REPORTS FRAME */
         #intel-hub {
-            position: fixed; bottom: -100%; left: 0; width: 100%; height: 85%;
-            background: var(--backdrop-color); backdrop-filter: blur(40px);
-            border-radius: 45px 45px 0 0; z-index: var(--layer-panel);
-            transition: var(--transition-main); border-top: 1px solid var(--border-color);
+            position: fixed; bottom: -100%; left: 0; width: 100%; height: 92%;
+            background: var(--bg-ui); z-index: 8000;
+            border-radius: 50px 50px 0 0; transition: var(--transition-panel);
             display: flex; flex-direction: column;
+            box-shadow: 0 -30px 80px rgba(0,0,0,0.6);
         }
         #intel-hub.active { bottom: 0; }
 
-        .chat-input-area {
-            padding: 25px; background: var(--item-bg);
-            border-top: 1px solid var(--border-color);
-            display: flex; gap: 15px; align-items: center;
-            padding-bottom: calc(25px + env(safe-area-inset-bottom));
+        /* REPORT COMMENT DESIGN (SOCIAL STYLE) */
+        .report-item {
+            background: var(--item-bg); padding: 25px;
+            display: grid; grid-template-columns: 60px 1fr 60px;
+            grid-template-rows: auto auto auto; gap: 5px 15px;
+            border-bottom: 0.8px solid var(--border-color);
+            position: relative;
         }
-        .chat-input {
-            flex: 1; background: rgba(118,118,128,0.15); border: none;
-            padding: 18px 25px; border-radius: 30px; color: var(--text-main);
-            font-size: 18px; outline: none;
+        .report-pfp { 
+            grid-column: 1; grid-row: 1/2; 
+            width: 50px; height: 50px; 
+            border-radius: 50%; background: linear-gradient(45deg, #555, #888); 
+            display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;
         }
+        .report-user { grid-column: 2; grid-row: 1; font-weight: 800; font-size: 18px; align-self: end; letter-spacing: -0.5px; }
+        .report-text { grid-column: 2; grid-row: 2; font-size: 17px; padding: 8px 0; line-height: 1.4; opacity: 0.9; }
+        .report-date { grid-column: 2; grid-row: 3; font-size: 13px; opacity: 0.4; font-weight: 600; }
+        .report-like-area { 
+            grid-column: 3; grid-row: 2; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .report-like-btn { background: none; border: none; font-size: 26px; cursor: pointer; filter: grayscale(1); transition: 0.3s; padding: 0; }
+        .report-like-btn.liked { filter: grayscale(0); transform: scale(1.2); }
 
-        .msg-bubble {
-            max-width: 80%; padding: 18px 22px; border-radius: 28px;
-            margin-bottom: 15px; font-size: 17px; line-height: 1.4;
-            position: relative; animation: msgSlide 0.3s ease-out;
+        /* STATUS STATES */
+        .loader-container { padding: 100px 40px; text-align: center; }
+        .spinner { 
+            width: 50px; height: 50px; border: 5px solid var(--border-color); 
+            border-top-color: var(--accent); border-radius: 50%; 
+            animation: spin 1s linear infinite; margin: 0 auto 20px;
         }
-        @keyframes msgSlide { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
-        .msg-remote { background: var(--item-bg); align-self: flex-start; border-bottom-left-radius: 5px; border: 1px solid var(--border-color); }
-        .msg-local { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 5px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .status-msg { font-size: 19px; font-weight: 600; opacity: 0.6; }
 
-        /* FABS */
+        /* FABS & UI */
         .fab { 
-            position: absolute; width: 70px; height: 70px; border-radius: 24px; 
+            position: absolute; width: 75px; height: 75px; border-radius: 25px; 
             border: none; display: flex; align-items: center; justify-content: center; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4); z-index: var(--layer-fab); 
-            background: var(--backdrop-color); backdrop-filter: blur(20px);
-            transition: var(--transition-elastic); font-size: 28px; color: var(--text-main);
+            box-shadow: 0 15px 45px rgba(0,0,0,0.4); z-index: 500; 
+            background: var(--backdrop-color); backdrop-filter: blur(25px);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); font-size: 30px; color: var(--text-main);
             border: 1px solid var(--border-color); cursor: pointer;
         }
-        .btn-search { bottom: 120px; right: 30px; background: var(--accent); color: white; border: none; }
-        .btn-config { bottom: 120px; left: 30px; }
-        .btn-locate { bottom: 210px; right: 30px; }
-        .btn-chat { bottom: 210px; left: 30px; }
-        .fab:active { transform: scale(0.9); }
+        .btn-search { bottom: 120px; right: 35px; background: var(--accent); color: white; border: none; }
+        .btn-config { bottom: 120px; left: 35px; }
+        .btn-locate { bottom: 220px; right: 35px; }
+        .fab:active { transform: scale(0.85); opacity: 0.8; }
 
-        /* AUTH & SECURITY */
-        #auth-overlay { position: fixed; inset: 0; background: var(--bg-ui); z-index: var(--layer-auth); display: flex; justify-content: center; align-items: center; transition: opacity 0.8s ease; }
-        #auth-overlay.deactivated { opacity: 0; visibility: hidden; pointer-events: none; }
-        .frame-auth { background: var(--item-bg); padding: 50px 30px; border-radius: 45px; text-align: center; width: 85%; max-width: 400px; border: 1px solid var(--border-color); }
-        .google-btn { background: var(--text-main); color: var(--bg-ui); border: none; padding: 22px; border-radius: 22px; width: 100%; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 40px; font-size: 19px; }
-        #security-alert { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: var(--layer-system); display: none; justify-content: center; align-items: center; padding: 30px; backdrop-filter: blur(15px); }
-        .alert-box { background: var(--item-bg); padding: 40px; border-radius: 40px; max-width: 500px; border: 2px solid var(--ios-red); text-align: center; }
+        .result-card { 
+            background: var(--item-bg); margin-bottom: 20px; padding: 30px; 
+            border-radius: 35px; border: 1px solid var(--border-color); 
+            display: flex; flex-direction: column; gap: 10px;
+        }
 
-        #logout-container { display: none; margin-top: 50px; padding-top: 25px; border-top: 1px solid var(--border-color); }
-        .logout-btn { background: transparent; border: 2px solid var(--ios-red); color: var(--ios-red); padding: 20px; border-radius: 20px; font-weight: 700; width: 100%; cursor: pointer; }
-
-        .result-card { background: var(--item-bg); margin-bottom: 15px; padding: 25px; border-radius: 24px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .tower-popup-content { padding: 10px; min-width: 220px; }
+        .btn-view-reports { 
+            background: var(--accent); color: white; border: none; 
+            padding: 18px; border-radius: 20px; width: 100%; 
+            font-weight: 800; font-size: 16px; margin-top: 15px; cursor: pointer;
+            box-shadow: var(--matrix-glow);
+        }
     </style>
 </head>
 <body class="dark-mode">
@@ -159,7 +165,7 @@
         <div id="banner-icon-box" class="banner-icon">📡</div>
         <div style="flex: 1.0;">
             <b id="banner-title" style="display: block; font-size: 19px; letter-spacing: -0.8px;">Radar Ultra Pro</b>
-            <span id="banner-msg" style="font-size: 16px; opacity: 0.8;">System initializing...</span>
+            <span id="banner-msg" style="font-size: 16px; opacity: 0.8;">Matrix Connection Established</span>
         </div>
     </div>
 
@@ -167,119 +173,123 @@
         <div id="login-portal" class="frame-auth">
             <div style="font-size: 110px; margin-bottom: 45px; filter: drop-shadow(0 20px 40px rgba(0,122,255,0.4));">📡</div>
             <h2 style="font-size: 42px; font-weight: 900; margin: 0 0 15px 0; letter-spacing: -2.0px;">Radar Ultra Pro</h2>
-            <p style="font-size: 20px; opacity: 0.6; line-height: 1.6; padding: 0 30px;">Initialize encrypted synchronization to access node intelligence and tactical grid data.</p>
+            <p style="font-size: 20px; opacity: 0.6; line-height: 1.6; padding: 0 30px;">V6.2.0 Enterprise Matrix. Access requires encrypted cloud authentication.</p>
             
             <button class="google-btn" id="main-login-trigger" onclick="loginWithGoogle()">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width:28px;">
                 Authenticate via Cloud
             </button>
             
-            <p style="font-size: 15px; margin-top: 50px; opacity: 0.5;">
-                By accessing, you verify compliance with <span style="color:var(--accent); font-weight:700; cursor:pointer" onclick="toggleSecurityAlert(true)">Terms of Service</span>
+            <p style="font-size: 15px; margin-top: 50px; opacity: 0.4;">
+                Authorized personnel only. All node interceptions are logged via <span style="color:var(--accent); font-weight:700; cursor:pointer" onclick="toggleSecurityAlert(true)">Protocol 04</span>
             </p>
         </div>
     </div>
 
     <div id="security-alert">
         <div class="alert-box">
-            <h2 style="color:var(--ios-red); font-size:32px; font-weight:900; margin-top:0; letter-spacing:-1px;">TERMS OF SERVICE</h2>
-            <div style="color:var(--text-main); font-size:18px; line-height:1.6; max-height:300px; overflow-y:auto; margin-bottom:30px; text-align:left; padding-right:15px; border-bottom: 1px solid var(--border-color);">
-                <p><b>1. Operational Security:</b> The operator is responsible for maintaining the confidentiality of their node access tokens. Shared credentials compromise grid integrity.</p>
-                <p><b>2. Data Interception:</b> Information gathered via the Overpass API is intended for visualization. Any unauthorized decryption of local signals is prohibited.</p>
-                <p><b>3. Identity Protocol:</b> Authentication through Google Cloud Services is required to establish user attribution within the matrix.</p>
-                <p><b>4. Limitation of Liability:</b> Enterprise Matrix V6.2.0 is provided "as-is". No guarantees are made regarding signal accuracy in high-interference zones.</p>
-                <p><b>5. Termination:</b> Access may be revoked if the operator violates grid broadcast ethics.</p>
+            <h2 style="color:var(--ios-red); font-size:32px; font-weight:900; margin-top:0; letter-spacing:-1px;">SECURITY PROTOCOLS</h2>
+            <div class="scrolling-frame" style="max-height:350px; text-align:left; border-bottom: 1px solid var(--border-color); margin-bottom: 25px;">
+                <p><b>1. Signal Integrity:</b> Data retrieved from Overpass API and OSM nodes are for tactical visualization only.</p>
+                <p><b>2. Intelligence Reporting:</b> Users contributing to the Intel Hub (Reports) must provide accurate signal status.</p>
+                <p><b>3. Privacy Shield:</b> Google Authentication ensures session attribution without exposing local hardware IDs.</p>
+                <p><b>4. Interference:</b> Radar Ultra Pro is not liable for signal discrepancies in high-density urban zones.</p>
             </div>
-            <button style="background:var(--accent); color:white; border:none; padding:22px; border-radius:24px; width:100%; font-weight:800; font-size:20px; cursor:pointer; letter-spacing:1px;" onclick="toggleSecurityAlert(false)">I AGREE</button>
+            <button style="background:var(--accent); color:white; border:none; padding:22px; border-radius:24px; width:100%; font-weight:800; font-size:20px; cursor:pointer;" onclick="toggleSecurityAlert(false)">ACKNOWLEDGE</button>
         </div>
     </div>
 
     <div id="config-overlay" class="full-overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px; flex-shrink: 0;">
-            <h2 style="font-size: 48px; font-weight: 900; letter-spacing: -2.8px; margin:0;">System</h2>
-            <button style="background:rgba(118,118,128,0.2); border:none; padding:18px 32px; border-radius:26px; color:var(--accent); font-weight:800; font-size:18px;" onclick="toggleConfig(false)">Close</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:50px; flex-shrink:0;">
+            <h2 style="font-size: 52px; font-weight: 900; letter-spacing: -3px; margin:0;">System</h2>
+            <button style="background:rgba(118,118,128,0.2); border:none; padding:18px 35px; border-radius:28px; color:var(--accent); font-weight:800; font-size:18px;" onclick="toggleConfig(false)">Close</button>
         </div>
         
         <div class="scrolling-frame">
-            <div style="background:var(--item-bg); padding:35px; border-radius:42px; display:flex; justify-content:space-between; align-items:center; border: 1.5px solid var(--border-color); margin-bottom: 35px;">
+            <div style="background:var(--item-bg); padding:35px; border-radius:45px; display:flex; justify-content:space-between; align-items:center; border: 1.5px solid var(--border-color); margin-bottom: 35px;">
                 <div style="display:flex; align-items:center; gap:25px;">
-                    <div style="background: #5856d6; width:54px; height:54px; border-radius:16px; display:flex; align-items:center; justify-content:center; color:white; font-size:26px;">🌙</div>
-                    <span style="font-weight:700; font-size:24px;">Stealth Mode</span>
+                    <div style="background: #5856d6; width:60px; height:60px; border-radius:20px; display:flex; align-items:center; justify-content:center; color:white; font-size:30px;">🌙</div>
+                    <div>
+                        <span style="font-weight:800; font-size:24px; display:block;">Stealth Mode</span>
+                        <span style="font-size:16px; opacity:0.5;">Dark-translucent interface</span>
+                    </div>
                 </div>
-                <input type="checkbox" id="dark-mode-toggle" onchange="applySystemTheme(this.checked)" checked style="width:48px; height:48px; accent-color: var(--accent);">
+                <input type="checkbox" id="dark-mode-toggle" onchange="applySystemTheme(this.checked)" checked style="width:50px; height:50px; accent-color: var(--accent);">
             </div>
 
-            <div style="background:var(--item-bg); padding:45px; border-radius:45px; border: 1.5px solid var(--border-color); box-shadow: var(--shadow-card);">
-                <div style="display:flex; justify-content:space-between; margin-bottom:30px; border-bottom: 0.8px solid var(--border-color); padding-bottom: 20px;">
-                    <span style="font-weight:600; font-size: 21px; opacity:0.6;">Core Engine</span>
-                    <span style="font-family: var(--font-mono); font-size: 21px; font-weight: 800; color: var(--accent);">V6.2.0-STABLE</span>
+            <div style="background:var(--item-bg); padding:45px; border-radius:50px; border: 1.5px solid var(--border-color);">
+                <h4 style="margin-top:0; font-size:14px; opacity:0.4; text-transform:uppercase; letter-spacing:2px;">Engine Status</h4>
+                <div style="display:flex; justify-content:space-between; margin-bottom:35px; border-bottom: 1px solid var(--border-color); padding-bottom: 25px;">
+                    <span style="font-weight:600; font-size:20px;">Grid Core</span>
+                    <span style="font-family:monospace; font-size:20px; font-weight:900; color:var(--accent);">V6.2.0-E</span>
                 </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:30px; border-bottom: 0.8px solid var(--border-color); padding-bottom: 20px;">
-                    <span style="font-weight:600; font-size: 21px; opacity:0.6;">Overpass Uplink</span>
-                    <span id="uplink-status" style="color:var(--ios-green); font-size: 21px; font-weight: 900;">READY</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:30px; border-bottom: 0.8px solid var(--border-color); padding-bottom: 20px;">
-                    <span style="font-weight:600; font-size: 21px; opacity:0.6;">Grid Latency</span>
-                    <span id="ping-monitor" style="color:var(--ios-green); font-size: 21px; font-weight: 900;">-- MS</span>
+                <div style="display:flex; justify-content:space-between; margin-bottom:35px; border-bottom: 1px solid var(--border-color); padding-bottom: 25px;">
+                    <span style="font-weight:600; font-size:20px;">Uplink Status</span>
+                    <span id="uplink-status" style="color:var(--ios-green); font-size:20px; font-weight:900;">ACTIVE</span>
                 </div>
                 <div style="display:flex; justify-content:space-between;">
-                    <span style="font-weight:600; font-size: 21px; opacity:0.6;">Account Status</span>
-                    <span style="color:var(--ios-green); font-size: 21px; font-weight: 900;">VERIFIED</span>
+                    <span style="font-weight:600; font-size:20px;">Telemetry Ping</span>
+                    <span id="ping-monitor" style="color:var(--ios-green); font-size:20px; font-weight:900;">-- MS</span>
                 </div>
             </div>
             
-            <div id="logout-container">
-                <button class="logout-btn" onclick="logoutSequence()">Log out of account</button>
-                <p style="text-align:center; font-size:14px; opacity:0.4; margin-top:20px;">Terminating current session token will require re-authentication.</p>
+            <div id="logout-container" style="margin-top:50px;">
+                <button class="logout-btn" onclick="logoutSequence()" style="width:100%; padding:25px; font-size:20px; border-radius:30px;">Terminate Session</button>
+                <p style="text-align:center; font-size:15px; opacity:0.4; margin-top:20px;">Logout will clear temporary cache and cloud tokens.</p>
             </div>
         </div>
     </div>
 
     <div id="search-overlay" class="full-overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:50px; flex-shrink: 0;">
-            <h2 style="font-size: 48px; font-weight: 900; letter-spacing: -2.8px;">Scanner</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:45px; flex-shrink:0;">
+            <h2 style="font-size: 52px; font-weight: 900; letter-spacing: -3px; margin:0;">Scanner</h2>
             <button style="background:none; border:none; color:var(--accent); font-weight:800; font-size:22px;" onclick="toggleSearch(false)">Dismiss</button>
         </div>
+        
         <div style="position:relative; flex-shrink: 0;">
-            <input type="text" id="search-input" placeholder="Coordinates, ID or Locale..." style="width:100%; padding:30px 35px; border-radius:35px; border:none; background:rgba(118,118,128,0.2); color:var(--text-main); font-size:24px; box-sizing: border-box; outline:none; border: 2px solid transparent;">
-            <button onclick="executeGridSearch()" style="background:var(--accent); color:white; border:none; padding:28px; border-radius:35px; font-weight:900; font-size:24px; width:100%; margin-top:25px; box-shadow: var(--matrix-glow);">INITIATE SCAN</button>
+            <input type="text" id="search-input" placeholder="Search City, Region or ID..." style="width:100%; padding:35px 40px; border-radius:40px; border:none; background:rgba(118,118,128,0.2); color:var(--text-main); font-size:26px; box-sizing:border-box; outline:none; font-weight:600;">
+            <button onclick="performGeographicSearch()" style="background:var(--accent); color:white; border:none; padding:30px; border-radius:40px; font-weight:900; font-size:24px; width:100%; margin-top:20px; box-shadow: var(--matrix-glow);">EXECUTE GLOBAL SCAN</button>
         </div>
+
         <div id="results-engine" class="scrolling-frame" style="margin-top:40px;">
             </div>
     </div>
 
     <div id="intel-hub">
-        <div style="padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); flex-shrink: 0;">
+        <div style="padding: 35px 40px; border-bottom: 1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-shrink:0; background: var(--backdrop-color); backdrop-filter: blur(20px);">
             <div>
-                <h3 style="margin:0; font-size: 24px; font-weight: 800;">Intel Hub</h3>
-                <span style="font-size: 14px; color: var(--ios-green); font-weight: 700;">● ENCRYPTED CHANNEL</span>
+                <h3 id="tower-id-display" style="margin:0; font-size:28px; font-weight:900; letter-spacing:-1px;">Node Intel</h3>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span id="report-sync-dot" style="width:10px; height:10px; border-radius:50%; background:var(--ios-green);"></span>
+                    <span style="font-size:15px; font-weight:700; opacity:0.6;">ENCRYPTED CHANNEL</span>
+                </div>
             </div>
-            <button style="font-size: 32px; background: none; border: none; color: var(--text-main);" onclick="toggleIntelHub(false)">✕</button>
+            <button style="font-size:40px; background:none; border:none; color:var(--text-main); font-weight:300;" onclick="toggleIntelHub(false)">✕</button>
         </div>
-        
-        <div id="chat-messages" class="scrolling-frame" style="padding: 25px; display: flex; flex-direction: column;">
-            </div>
 
-        <div class="chat-input-area">
-            <input type="text" id="chat-input-field" class="chat-input" placeholder="Broadcast intelligence..." onkeypress="if(event.key==='Enter') sendIntelMessage()">
-            <button onclick="sendIntelMessage()" style="background: var(--accent); border: none; width: 55px; height: 55px; border-radius: 50%; color: white; font-size: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">↑</button>
+        <div id="report-scroller" class="scrolling-frame" style="background: var(--bg-ui);">
+            <div id="report-status-area"></div>
+            <div id="report-list"></div>
+        </div>
+
+        <div class="chat-input-area" style="padding: 25px 30px; background: var(--item-bg); border-top: 1px solid var(--border-color); display:flex; gap:15px; align-items:center; padding-bottom: calc(30px + var(--safe-bottom));">
+            <input type="text" id="report-input-field" class="chat-input" placeholder="Submit signal report..." style="flex:1; padding:22px 28px; border-radius:35px; background:rgba(118,118,128,0.1); border:none; color:var(--text-main); font-size:18px; outline:none;">
+            <button onclick="postReport()" style="background:var(--accent); border:none; width:65px; height:65px; border-radius:50%; color:white; font-size:28px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 10px 20px rgba(0,122,255,0.3);">↑</button>
         </div>
     </div>
 
     <button class="fab btn-config" onclick="toggleConfig(true)">⚙️</button>
     <button class="fab btn-locate" id="locate-btn" onclick="toggleTacticalGPS()">🛰️</button>
     <button class="fab btn-search" onclick="toggleSearch(true)">🔍</button>
-    <button class="fab btn-chat" onclick="toggleIntelHub(true)">💬</button>
 
     <div id="map"></div>
-
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // CORE FIREBASE CONFIGURATION
+        // FIREBASE CORE SETUP
         const firebaseConfig = {
             apiKey: "AIzaSyD-9mGZUB4m_vuc8mAATPtpiQdinb4nYx0",
             authDomain: "radar-database-3448b.firebaseapp.com",
@@ -294,203 +304,179 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        window.auth = auth;
-        window.signOut = signOut;
+        let currentTowerId = null;
+        let unsubscribeReports = null;
 
-        // AUTHENTICATION PROTOCOLS
+        // AUTHENTICATION
         window.loginWithGoogle = async () => {
-            try { 
-                window.dispatchNotification("Authentication", "Linking to Matrix...", "info");
-                await signInWithPopup(auth, provider); 
-            } catch (err) { window.dispatchNotification("Error", "Auth Failed", "error"); }
+            try { await signInWithPopup(auth, provider); } 
+            catch (e) { window.dispatchNotification("Auth Error", "Connection failed", "error"); }
         };
 
-        window.logoutSequence = async () => {
-            try { 
-                window.dispatchNotification("Security", "Purging session token...", "error");
-                await signOut(auth); 
-                window.location.reload(); 
-            } catch (err) { console.error(err); }
+        window.logoutSequence = () => signOut(auth).then(() => location.reload());
+
+        // REPORTS ENGINE (INTEL HUB)
+        window.openReports = (towerId) => {
+            currentTowerId = towerId;
+            document.getElementById('tower-id-display').innerText = `Node #${towerId}`;
+            window.toggleIntelHub(true);
+            loadReports(towerId);
         };
 
-        // INTEL HUB (CHAT) REAL-TIME SYNC
-        window.sendIntelMessage = async () => {
-            const input = document.getElementById('chat-input-field');
-            const text = input.value.trim();
-            if (!text || !window.currentUser) return;
+        function loadReports(towerId) {
+            const list = document.getElementById('report-list');
+            const statusArea = document.getElementById('report-status-area');
+            list.innerHTML = '';
+            statusArea.innerHTML = `<div class="loader-container"><div class="spinner"></div><p class="status-msg">Synchronizing Intel...</p></div>`;
 
-            try {
-                await addDoc(collection(db, "intel_stream"), {
-                    text: text,
-                    user: window.currentUser.displayName,
-                    uid: window.currentUser.uid,
-                    timestamp: serverTimestamp()
-                });
-                input.value = '';
-            } catch (e) { console.error("Broadcast failed", e); }
-        };
+            if (unsubscribeReports) unsubscribeReports();
 
-        function subscribeToIntelStream() {
-            const q = query(collection(db, "intel_stream"), orderBy("timestamp", "desc"), limit(50));
-            onSnapshot(q, (snapshot) => {
-                const container = document.getElementById('chat-messages');
-                container.innerHTML = '';
-                snapshot.docs.reverse().forEach(doc => {
+            const q = query(collection(db, "reports"), where("towerId", "==", towerId), orderBy("timestamp", "desc"));
+
+            unsubscribeReports = onSnapshot(q, (snapshot) => {
+                statusArea.innerHTML = '';
+                if (snapshot.empty) {
+                    statusArea.innerHTML = `<div class="loader-container"><p class="status-msg">There are no reports yet.</p></div>`;
+                    return;
+                }
+
+                list.innerHTML = '';
+                snapshot.docs.forEach(doc => {
                     const data = doc.data();
-                    const isLocal = data.uid === window.currentUser?.uid;
-                    const div = document.createElement('div');
-                    div.className = `msg-bubble ${isLocal ? 'msg-local' : 'msg-remote'}`;
-                    div.innerHTML = `<small style="display:block;opacity:0.7;margin-bottom:4px;">${data.user}</small>${data.text}`;
-                    container.appendChild(div);
+                    const date = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString() : "Just now";
+                    const item = document.createElement('div');
+                    item.className = 'report-item';
+                    item.innerHTML = `
+                        <div class="report-pfp">${data.user[0]}</div>
+                        <div class="report-user">${data.user}</div>
+                        <div class="report-text">${data.text}</div>
+                        <div class="report-date">${date}</div>
+                        <div class="report-like-area">
+                            <button class="report-like-btn" onclick="this.classList.toggle('liked')">❤️</button>
+                        </div>
+                    `;
+                    list.appendChild(item);
                 });
-                container.scrollTop = container.scrollHeight;
+            }, (error) => {
+                statusArea.innerHTML = `<div class="loader-container"><p class="status-msg" style="color:var(--ios-red)">Something went wrong. (error code: 000)</p></div>`;
             });
         }
 
+        window.postReport = async () => {
+            const input = document.getElementById('report-input-field');
+            const text = input.value.trim();
+            if (!text || !currentTowerId || !window.currentUser) return;
+
+            try {
+                await addDoc(collection(db, "reports"), {
+                    towerId: currentTowerId,
+                    text: text,
+                    user: window.currentUser.displayName,
+                    timestamp: serverTimestamp()
+                });
+                input.value = '';
+            } catch (e) { window.dispatchNotification("Sync Error", "Failed to broadcast", "error"); }
+        };
+
         onAuthStateChanged(auth, (user) => {
-            const authOverlay = document.getElementById('auth-overlay');
-            const logoutContainer = document.getElementById('logout-container');
             if (user) {
                 window.currentUser = user;
-                authOverlay.classList.add('deactivated');
-                if (logoutContainer) logoutContainer.style.display = 'block';
-                window.dispatchNotification("System Online", `Welcome, ${user.displayName}`);
+                document.getElementById('auth-overlay').classList.add('deactivated');
                 initTacticalMap();
-                subscribeToIntelStream();
-            } else {
-                authOverlay.classList.remove('deactivated');
-                if (logoutContainer) logoutContainer.style.display = 'none';
             }
         });
-    </script>
 
-    <script>
-        /* GEOSPATIAL ENGINE & OVERPASS UPLINK */
-        let map, userMarker, gpsActive = false;
-        let activeMarkers = [];
-        const OVERPASS_ENDPOINTS = [
-            'https://overpass-api.de/api/interpreter',
-            'https://overpass.kumi.systems/api/interpreter',
-            'https://lz4.overpass-api.de/api/interpreter'
-        ];
+        // GEOSPATIAL SEARCH & OVERPASS LOGIC
+        let map, activeMarkers = [];
 
         function initTacticalMap() {
             if (map) return;
-            map = L.map('map', { zoomControl: false, attributionControl: false, maxZoom: 19 }).setView([-15.7938, -47.8827], 13);
+            map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-15.7938, -47.8827], 13);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
-            
-            setInterval(() => {
-                const ping = Math.floor(Math.random() * 25 + 12);
-                document.getElementById('ping-monitor').innerText = ping + " MS";
-            }, 4000);
-
-            map.on('moveend', () => { if (map.getZoom() >= 14) executeGridSearch(true); });
+            map.on('moveend', () => { if (map.getZoom() >= 14) window.executeGridSearch(true); });
         }
 
-        window.dispatchNotification = (title, msg, type = "info") => {
-            const banner = document.getElementById('ios-banner-system');
-            document.getElementById('banner-title').innerText = title;
-            document.getElementById('banner-msg').innerText = msg;
-            const icon = document.getElementById('banner-icon-box');
-            icon.style.background = type === "error" ? "var(--ios-red)" : "var(--accent)";
-            banner.classList.add('active');
-            setTimeout(() => banner.classList.remove('active'), 4000);
+        window.performGeographicSearch = async () => {
+            const queryText = document.getElementById('search-input').value;
+            if (!queryText) return;
+
+            window.dispatchNotification("Scanner", "Searching region...");
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryText)}`);
+                const data = await res.json();
+                if (data.length > 0) {
+                    const { lat, lon } = data[0];
+                    map.setView([lat, lon], 15);
+                    window.executeGridSearch();
+                    window.toggleSearch(false);
+                } else {
+                    window.dispatchNotification("Scanner", "Region not found", "error");
+                }
+            } catch (e) { window.dispatchNotification("Error", "Geocoding failed", "error"); }
         };
 
-        // ENHANCED NODE SCANNER WITH REDUNDANCY
         window.executeGridSearch = async (isAuto = false) => {
-            if (map.getZoom() < 13) return;
             const b = map.getBounds();
-            const statusEl = document.getElementById('uplink-status');
+            const query = `[out:json][timeout:25];node["man_made"~"tower|mast"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});out body;`;
             
-            // FILTRO DE TORRES ULTRA-AMPLO
-            const query = `[out:json][timeout:30];(
-                node["man_made"="mast"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});
-                node["man_made"="tower"]["tower:type"="communication"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});
-                node["communication:mobile_phone"="yes"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});
-                node["tower:type"="communication"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});
-                node["telecom"="antenna"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});
-            );out body;`;
-
-            if (!isAuto) window.dispatchNotification("Scanner", "Intercepting frequencies...");
-
-            let success = false;
-            for (let url of OVERPASS_ENDPOINTS) {
-                try {
-                    statusEl.innerText = "UPLINKING...";
-                    statusEl.style.color = "var(--ios-orange)";
-                    const res = await fetch(url, { method: 'POST', body: query });
-                    if (!res.ok) throw new Error();
-                    const data = await res.json();
-                    renderNodes(data.elements);
-                    statusEl.innerText = "READY";
-                    statusEl.style.color = "var(--ios-green)";
-                    success = true; break;
-                } catch (e) { console.warn("Switching server..."); }
-            }
-            if (!success) {
-                statusEl.innerText = "FAILED";
-                statusEl.style.color = "var(--ios-red)";
-                window.dispatchNotification("Uplink Error", "All servers unresponsive.", "error");
-            }
+            try {
+                const res = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: query });
+                const data = await res.json();
+                renderNodes(data.elements);
+            } catch (e) { console.error("Grid failure"); }
         };
 
         function renderNodes(nodes) {
             activeMarkers.forEach(m => map.removeLayer(m));
-            activeMarkers = [];
             const engine = document.getElementById('results-engine');
-            if (engine) engine.innerHTML = '';
+            engine.innerHTML = '';
 
             nodes.forEach(node => {
                 const marker = L.circleMarker([node.lat, node.lon], {
-                    radius: 12, fillColor: "#34c759", color: "#000", weight: 2, fillOpacity: 0.8
+                    radius: 12, fillColor: "#0a84ff", color: "#fff", weight: 2, fillOpacity: 0.8
                 }).addTo(map);
-                marker.bindPopup(`<b>NODE ${node.id}</b><br>Signal Stable`);
+
+                const popupHtml = `
+                    <div class="tower-popup-content">
+                        <b style="font-size:18px;">NODE #${node.id}</b><br>
+                        <span style="opacity:0.6;font-size:12px;">Type: ${node.tags.man_made || 'Communication'}</span>
+                        <button class="btn-view-reports" onclick="openReports('${node.id}')">View reports</button>
+                    </div>
+                `;
+                marker.bindPopup(popupHtml);
                 activeMarkers.push(marker);
 
-                if (engine) {
-                    const card = document.createElement('div');
-                    card.className = 'result-card';
-                    card.innerHTML = `<div><b>NODE #${node.id}</b><br><small>${node.lat.toFixed(4)}, ${node.lon.toFixed(4)}</small></div>`;
-                    card.onclick = () => { map.setView([node.lat, node.lon], 18); toggleSearch(false); };
-                    engine.appendChild(card);
-                }
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `<b>Node ${node.id}</b><small>${node.lat.toFixed(4)}, ${node.lon.toFixed(4)}</small>`;
+                card.onclick = () => { map.setView([node.lat, node.lon], 18); window.toggleSearch(false); };
+                engine.appendChild(card);
             });
         }
 
-        /* UI INTERFACE CONTROLS */
-        window.toggleConfig = (s) => {
-            const el = document.getElementById('config-overlay');
-            if(s){ el.style.display='flex'; setTimeout(()=>el.classList.add('active'),10); }
-            else{ el.classList.remove('active'); setTimeout(()=>el.style.display='none',400); }
+        // UI HELPERS
+        window.toggleConfig = (s) => toggleOverlay('config-overlay', s);
+        window.toggleSearch = (s) => toggleOverlay('search-overlay', s);
+        window.toggleIntelHub = (s) => document.getElementById('intel-hub').classList.toggle('active', s);
+        
+        function toggleOverlay(id, s) {
+            const el = document.getElementById(id);
+            if(s) { el.style.display='flex'; setTimeout(()=>el.classList.add('active'), 10); }
+            else { el.classList.remove('active'); setTimeout(()=>el.style.display='none', 500); }
+        }
+
+        window.dispatchNotification = (title, msg, type) => {
+            const b = document.getElementById('ios-banner-system');
+            document.getElementById('banner-title').innerText = title;
+            document.getElementById('banner-msg').innerText = msg;
+            b.classList.add('active');
+            setTimeout(() => b.classList.remove('active'), 4000);
         };
-        window.toggleSearch = (s) => {
-            const el = document.getElementById('search-overlay');
-            if(s){ el.style.display='flex'; setTimeout(()=>el.classList.add('active'),10); }
-            else{ el.classList.remove('active'); setTimeout(()=>el.style.display='none',400); }
-        };
-        window.toggleIntelHub = (s) => {
-            document.getElementById('intel-hub').classList.toggle('active', s);
-        };
+
         window.toggleTacticalGPS = () => {
-            const btn = document.getElementById('locate-btn');
-            gpsActive = !gpsActive;
-            if(gpsActive) {
-                btn.style.background = "var(--ios-green)";
-                map.locate({setView: true, maxZoom: 16, watch: true});
-            } else {
-                btn.style.background = "var(--backdrop-color)";
-                map.stopLocate();
-                if(userMarker) map.removeLayer(userMarker);
-                userMarker = null;
-            }
+            map.locate({setView: true, maxZoom: 16});
+            window.dispatchNotification("GPS", "Relocating to current coords...");
         };
-        map.on('locationfound', (e) => {
-            if(userMarker) userMarker.setLatLng(e.latlng);
-            else userMarker = L.circleMarker(e.latlng, {radius:10, fillColor:"#0a84ff", color:"#fff", weight:3, fillOpacity:0.9}).addTo(map);
-        });
-        window.toggleSecurityAlert = (s) => { document.getElementById('security-alert').style.display = s ? 'flex' : 'none'; };
-        window.applySystemTheme = (isDark) => { if(isDark) document.body.classList.add('dark-mode'); else document.body.classList.remove('dark-mode'); };
     </script>
 </body>
 </html>
