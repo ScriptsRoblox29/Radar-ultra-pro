@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Tower Radar Premium</title>
+    <title>Tower Radar | Network</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -12,82 +12,80 @@
             --bg: #000000; 
             --surface: #0a0a0a; 
             --border: rgba(255,255,255,0.08);
-            --text-sec: #71767b; 
         }
-        body { background: var(--bg); color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; overflow: hidden; }
+        body { background: var(--bg); color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; overflow: hidden; letter-spacing: -0.01em; }
         
-        /* Map Customization */
-        #map { height: 100vh; width: 100%; display: none; filter: contrast(1.1) brightness(0.6) saturate(0.9); }
+        /* Map Customization - Estilo Radar Dark */
+        #map { height: 100vh; width: 100%; display: none; filter: contrast(1.2) brightness(0.6) saturate(0.5); background: #000; }
 
-        /* Advanced UI Glassmorphism */
-        .glass { background: rgba(10, 10, 10, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); }
+        /* UI Glassmorphism Premium */
+        .glass { background: rgba(8, 8, 8, 0.75); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--border); }
         
-        /* Premium Skeleton */
-        .skeleton { background: linear-gradient(90deg, #121212 25%, #1d1d1d 50%, #121212 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        /* Skeleton Shimmer */
+        .skeleton { background: linear-gradient(90deg, #0d0d0d 25%, #1a1a1a 50%, #0d0d0d 75%); background-size: 200% 100%; animation: shimmer 2s infinite linear; border-radius: 12px; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-        /* Modals & Frames */
+        /* Frames / Side Sheets */
         .frame-overlay { 
             position: fixed; inset: 0; background: var(--bg); z-index: 50; 
             display: flex; flex-direction: column; 
-            transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+            transform: translateY(100%); transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .frame-overlay.active { transform: translateY(0); }
         
-        .frame-header { padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-        .frame-content { flex: 1; overflow-y: auto; }
+        .frame-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .frame-content { flex: 1; overflow-y: auto; scrollbar-width: none; }
 
-        /* Custom Popup Bubble */
-        .leaflet-popup-content-wrapper { background: #0f0f0f !important; color: white !important; border-radius: 18px !important; border: 1px solid #333 !important; padding: 0 !important; overflow: hidden; }
-        .leaflet-popup-content { margin: 0 !important; width: 220px !important; }
-        .leaflet-popup-tip { background: #0f0f0f !important; border: 1px solid #333 !important; }
+        /* Custom Popup Bubble (O passo antes do Feed) */
+        .leaflet-popup-content-wrapper { background: #0f0f0f !important; color: white !important; border-radius: 28px !important; border: 1px solid #222 !important; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5) !important; padding: 0 !important; }
+        .leaflet-popup-content { margin: 0 !important; width: 240px !important; }
+        .leaflet-popup-tip { background: #0f0f0f !important; border: 1px solid #222 !important; }
         
-        .bubble-card { padding: 15px; }
-        .tag { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; background: rgba(255,255,255,0.1); }
-        .tag-5g { color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
-        .tag-4g { color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); }
+        .bubble-inner { padding: 20px; }
+        .tag-pill { font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 8px; text-transform: uppercase; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
 
-        /* Post Items */
-        .post-card { padding: 16px; border-bottom: 1px solid var(--border); transition: background 0.2s; }
-        .post-card:active { background: #0a0a0a; }
+        .btn-access { background: #fff; color: #000; font-weight: 800; padding: 12px; border-radius: 16px; width: 100%; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; transition: 0.2s; }
+        .btn-access:active { transform: scale(0.95); opacity: 0.9; }
 
-        .loader { width: 24px; height: 24px; border: 2px solid #222; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .loader { width: 24px; height: 24px; border: 2.5px solid #1a1a1a; border-top-color: #fff; border-radius: 50%; animation: spin 0.8s infinite linear; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .btn-primary { background: #fff; color: #000; font-weight: 700; border-radius: 99px; transition: opacity 0.2s; }
-        .btn-primary:active { opacity: 0.8; }
+        #toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 1000; display: none; }
     </style>
 </head>
 <body>
 
     <div id="boot-screen" class="fixed inset-0 flex flex-col items-center justify-center bg-black z-[100]">
         <div class="loader"></div>
-        <div class="mt-4 text-[10px] tracking-[0.3em] text-neutral-600 font-bold uppercase">System Init</div>
+        <div class="mt-6 text-[10px] tracking-[0.5em] text-neutral-600 font-bold uppercase">Establishing Link</div>
     </div>
 
-    <div id="login-screen" class="fixed inset-0 bg-black z-[90] hidden p-10 flex flex-col">
-        <div class="flex-1 flex flex-col justify-center">
-            <h1 class="text-4xl font-black tracking-tight mb-2">TOWER<br>RADAR</h1>
-            <p class="text-neutral-500 text-sm max-w-[200px]">Advanced cellular network mapping and social feed.</p>
+    <div id="login-screen" class="fixed inset-0 bg-black z-[90] hidden p-10 flex flex-col justify-between">
+        <div class="mt-20">
+            <h1 class="text-6xl font-black tracking-tighter italic leading-[0.85]">TOWER<br>RADAR</h1>
+            <p class="text-neutral-500 mt-6 text-sm font-medium max-w-[240px] leading-relaxed">Access the global cellular infrastructure database and encrypted feeds.</p>
         </div>
-        <button id="btn-google" class="btn-primary w-full py-4 flex items-center justify-center gap-3 mb-4">
-            Continue with Google
-        </button>
-        <p class="text-[10px] text-center text-neutral-600">By entering, you agree to our <span class="underline">Terms</span>.</p>
+        <div>
+            <button id="btn-google" class="w-full bg-white text-black font-black py-5 rounded-[24px] flex items-center justify-center gap-3 active:scale-95 transition mb-4">
+                Continue with Google
+            </button>
+            <p class="text-[9px] text-center text-neutral-700 font-bold uppercase tracking-widest">Secure Terminal v2.6.0</p>
+        </div>
     </div>
 
     <div id="map-ui" class="hidden pointer-events-none fixed inset-0 z-20">
-        <div class="absolute top-6 left-6 right-6 flex justify-between pointer-events-auto">
-            <div class="glass px-4 py-2 rounded-full text-xs font-bold tracking-tighter flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> LIVE NETWORK
+        <div class="absolute top-8 left-8 right-8 flex justify-between pointer-events-auto">
+            <div class="glass px-5 py-2.5 rounded-2xl flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
+                <span class="text-[10px] font-black tracking-widest uppercase">Network Live</span>
             </div>
-            <button onclick="openFrame('settings-frame')" class="glass p-3 rounded-full active:scale-90 transition pointer-events-auto">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            <button onclick="openFrame('settings-frame')" class="glass p-3.5 rounded-2xl active:scale-90 transition pointer-events-auto">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16m-7 6h7"/></svg>
             </button>
         </div>
         
-        <button onclick="locateMe()" class="absolute bottom-10 right-6 glass p-4 rounded-2xl active:scale-90 transition pointer-events-auto shadow-2xl">
-            <svg class="w-6 h-6 text-purple-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+        <button onclick="locateMe()" class="absolute bottom-12 right-8 glass p-5 rounded-[28px] active:scale-90 transition pointer-events-auto shadow-2xl">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
         </button>
     </div>
 
@@ -96,35 +94,36 @@
     <div id="settings-frame" class="frame-overlay">
         <div class="frame-header">
             <button onclick="closeFrame('settings-frame')"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
-            <span class="font-black text-sm uppercase tracking-widest">Navigation</span>
+            <span class="font-black text-xs uppercase tracking-widest italic">Terminal Menu</span>
             <div class="w-6"></div>
         </div>
-        <div class="frame-content p-6 space-y-3">
-            <div onclick="openProfile(currentUserUid)" class="glass p-5 rounded-2xl flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-full bg-neutral-800" id="mini-avatar-box"></div>
+        <div class="frame-content p-6 space-y-4">
+            <div onclick="openProfile(currentUserUid)" class="glass p-6 rounded-[24px] flex items-center justify-between active:bg-white/5 transition">
+                <div class="flex items-center gap-5">
+                    <div id="my-avatar-container" class="w-14 h-14 rounded-full bg-neutral-900 border border-white/10 overflow-hidden"></div>
                     <div>
-                        <div class="font-bold">My Account</div>
-                        <div class="text-xs text-neutral-500">View your activity</div>
+                        <div class="font-black text-lg italic uppercase">Profile</div>
+                        <div class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Network Identity</div>
                     </div>
                 </div>
                 <svg class="w-5 h-5 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
             </div>
         </div>
     </div>
+
         <div id="profile-frame" class="frame-overlay z-[60]">
         <div class="frame-header">
             <button onclick="closeFrame('profile-frame')"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
-            <span class="font-bold text-sm uppercase">Operator Profile</span>
-            <button onclick="showReport()"><svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></button>
+            <span class="font-black text-xs uppercase italic">Operator Identity</span>
+            <button onclick="showReport()"><svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></button>
         </div>
         <div class="frame-content">
-            <div class="p-8 flex flex-col items-center border-b border-white/5 bg-gradient-to-b from-neutral-900/50 to-transparent">
-                <img id="p-avatar" class="w-24 h-24 rounded-full border-4 border-black shadow-2xl mb-4 bg-neutral-800">
-                <h3 id="p-name" class="text-2xl font-black italic"></h3>
-                <p id="p-uid" class="text-[10px] font-mono text-neutral-600 tracking-widest mt-1 uppercase"></p>
-                <div id="p-stats" class="mt-4 px-4 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold hidden uppercase">
-                    Transmissions: <span id="p-count">0</span>
+            <div class="p-10 flex flex-col items-center border-b border-white/5 bg-gradient-to-b from-neutral-900/40 to-transparent">
+                <img id="p-avatar" class="w-28 h-28 rounded-full border-[6px] border-black shadow-2xl mb-6 bg-neutral-900">
+                <h3 id="p-name" class="text-3xl font-black italic uppercase tracking-tighter"></h3>
+                <p id="p-uid" class="text-[9px] font-mono text-neutral-600 tracking-[0.3em] mt-2 uppercase"></p>
+                <div id="p-stats" class="mt-6 px-6 py-2 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hidden">
+                    Comments: <span id="p-count" class="text-purple-400">0</span>
                 </div>
             </div>
             <div id="profile-posts-list"></div>
@@ -135,32 +134,21 @@
         <div class="frame-header glass">
             <button onclick="closeFrame('tower-frame')"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
             <div class="text-center">
-                <div id="tower-header-title" class="font-black text-xs tracking-tighter italic">TOWER FEED</div>
-                <div class="text-[9px] text-neutral-500 uppercase font-bold">Encrypted Connection</div>
+                <div id="tower-header-title" class="font-black text-[10px] tracking-widest italic uppercase">Node Feed</div>
+                <div class="text-[8px] text-neutral-600 uppercase font-bold tracking-tighter">Secure Communication Line</div>
             </div>
             <div class="w-6"></div>
         </div>
         <div id="feed-container" class="frame-content bg-black"></div>
-        <div class="p-4 glass border-t border-white/5 flex gap-3 items-center pb-8">
-            <input id="post-input" type="text" placeholder="Broadcast a message..." class="flex-1 bg-white/5 text-white px-5 py-3 rounded-2xl outline-none border border-white/5 focus:border-purple-500/50 transition text-sm">
-            <button id="post-btn" class="bg-white text-black p-3 rounded-2xl active:scale-90 transition">
+        <div class="p-4 glass border-t border-white/5 flex gap-3 items-center pb-10">
+            <input id="post-input" type="text" placeholder="Type a comment..." class="flex-1 bg-white/5 text-white px-6 py-4 rounded-2xl outline-none border border-white/5 focus:border-white/20 transition text-sm font-medium">
+            <button id="post-btn" class="bg-white text-black p-4 rounded-2xl active:scale-90 transition shadow-xl">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
             </button>
         </div>
     </div>
 
-    <div id="report-modal" class="fixed inset-0 bg-black/90 z-[200] hidden flex items-center justify-center p-8 backdrop-blur-md">
-        <div class="glass p-8 rounded-[32px] text-center max-w-xs w-full shadow-2xl">
-            <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-            </div>
-            <h3 class="font-black text-xl mb-2 italic uppercase">Policy Violation</h3>
-            <p class="mb-8 text-xs text-neutral-500 leading-relaxed font-medium">To maintain network integrity, report abuse to <span class="text-white">@fmafioso</span> on TikTok with proof.</p>
-            <button onclick="document.getElementById('report-modal').classList.add('hidden')" class="w-full btn-primary py-4 italic uppercase tracking-tighter">Understood</button>
-        </div>
-    </div>
-
-    <div id="toast"></div>
+    <div id="toast" class="glass px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-2xl"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -200,9 +188,8 @@
         async function ensureUserDoc(user) {
             const userRef = doc(db, "users", user.uid);
             const snap = await getDoc(userRef);
-            if (!snap.exists()) await setDoc(userRef, { dailyCount: 0, lastResetDay: new Date().getDate() });
-            const avatarBox = document.getElementById('mini-avatar-box');
-            if(avatarBox) avatarBox.innerHTML = `<img src="${user.photoURL}" class="w-full h-full rounded-full object-cover">`;
+            if (!snap.exists()) await setDoc(userRef, { dailyCount: 0, lastResetDay: new Date().getDate(), lastPost: serverTimestamp() });
+            document.getElementById('my-avatar-container').innerHTML = `<img src="${user.photoURL}" class="w-full h-full object-cover">`;
         }
 
         document.getElementById('btn-google').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
@@ -210,7 +197,7 @@
         function initMap() {
             document.getElementById('map').style.display = 'block';
             document.getElementById('map-ui').classList.remove('hidden');
-            map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-23.55, -46.63], 15);
+            map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-23.55, -46.63], 16);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
             markersLayer = L.layerGroup().addTo(map);
             map.on('moveend', fetchTowers);
@@ -220,62 +207,56 @@
         async function fetchTowers() {
             if (map.getZoom() < 14) return;
             const b = map.getBounds();
-            const q = `[out:json][timeout:15];(node["man_made"~"mast|tower"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}););out body;`;
+            // Busca expandida: torres, mastros e antenas de telecomunicação/broadcast
+            const q = `[out:json][timeout:20];(node["man_made"~"mast|tower"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});node["telecom"~"antenna|cell_tower"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}););out body;`;
+            
             try {
                 const res = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(q));
                 const data = await res.json();
                 markersLayer.clearLayers();
                 data.elements.forEach(t => {
-                    // --- LÓGICA DE CORES DINÂMICAS ---
-                    let color = "#555"; // Desconhecida (Cinza)
-                    let type = "General Tower";
-                    let operator = t.tags?.operator || t.tags?.brand || "Unknown Provider";
-                    let gens = [];
+                    let color = "#444"; // Default Gray
+                    let provider = t.tags?.operator || t.tags?.brand || "Unknown Node";
+                    let tech = "Standard";
 
-                    if (t.tags?.communication === "television" || t.tags?.tower_type === "communication") {
+                    // Lógica de Cores solicitada
+                    if (t.tags?.communication === "television" || t.tags?.tower_type === "communication" || t.tags?.["communication:radio"]) {
                         color = "#a78bfa"; // TV (Roxo)
-                        type = "Broadcast Station";
-                    } else if (t.tags?.["communication:mobile"] || t.tags?.network) {
-                        color = "#22c55e"; // Dados (Verde)
-                        type = "Cellular Node";
-                        if(t.tags?.["communication:4g"] === "yes") gens.push("4G");
-                        if(t.tags?.["communication:5g"] === "yes") gens.push("5G");
+                        tech = "Broadcast TV/Radio";
+                    } else {
+                        color = "#22c55e"; // Dados Móveis (Verde)
+                        tech = t.tags?.["communication:5g"] === "yes" ? "5G Network" : "4G/LTE Node";
                     }
 
                     const icon = L.divIcon({ 
-                        html: `<div style="width:16px;height:16px;background:${color};border:3px solid black;border-radius:50%;box-shadow:0 0 15px ${color}88"></div>`, 
+                        html: `<div style="width:14px;height:14px;background:${color};border:3px solid black;border-radius:50%;box-shadow:0 0 12px ${color}aa"></div>`, 
                         className: '' 
                     });
 
-                    // --- INFO BUBBLE ANTES DO CHAT ---
+                    // INFO BUBBLE (Antes de abrir o chat)
                     const popupContent = `
-                        <div class="bubble-card">
-                            <div class="text-[10px] text-neutral-500 font-black mb-1">ID #${t.id}</div>
-                            <div class="text-sm font-bold text-white mb-2">${operator}</div>
+                        <div class="bubble-inner">
+                            <div class="text-[9px] text-neutral-600 font-black uppercase mb-1 tracking-tighter">Node ID #${t.id}</div>
+                            <div class="text-sm font-black text-white italic uppercase mb-2 leading-none">${provider}</div>
                             <div class="flex gap-2 mb-4">
-                                ${gens.map(g => `<span class="tag tag-${g.toLowerCase()}">${g}</span>`).join('') || '<span class="tag">Edge/2G</span>'}
+                                <span class="tag-pill text-white/60">${tech}</span>
                             </div>
-                            <button onclick="window.openTower('${t.id}')" class="w-full bg-white text-black text-[10px] font-black py-2 rounded-lg uppercase italic tracking-tighter active:scale-95 transition">
-                                Access Feed
-                            </button>
+                            <button onclick="window.openTower('${t.id}')" class="btn-access">Open Comments</button>
                         </div>
                     `;
 
                     L.marker([t.lat, t.lon], {icon}).addTo(markersLayer).bindPopup(popupContent);
                 });
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Map Fetch Error"); }
         }
 
-        // --- FEED LOGIC ---
         window.openTower = (id) => {
             currentTowerId = id;
-            document.getElementById('tower-header-title').innerText = `NODE SYSTEM #${id}`;
+            document.getElementById('tower-header-title').innerText = `NODE_${id}`;
             const frame = document.getElementById('tower-frame');
             frame.style.display = 'flex';
             setTimeout(() => frame.classList.add('active'), 10);
-            
-            lastDoc = null;
-            document.getElementById('feed-container').innerHTML = generateSkeletonHTML(5);
+            document.getElementById('feed-container').innerHTML = generateSkeletonHTML(4);
             loadComments(true);
         };
 
@@ -284,24 +265,20 @@
             isFeedLoading = true;
             try {
                 let q = query(collection(db, "comments"), where("towerId", "==", String(currentTowerId)), orderBy("createdAt", "desc"), limit(15));
-                if (lastDoc && !reset) q = query(q, startAfter(lastDoc));
                 const snap = await getDocs(q);
                 if (reset) document.getElementById('feed-container').innerHTML = "";
-                if (snap.empty && reset) {
-                    document.getElementById('feed-container').innerHTML = `<div class="p-20 text-center text-neutral-600 text-[10px] font-bold uppercase tracking-[0.3em]">No activity detected</div>`;
+                if (snap.empty) {
+                    document.getElementById('feed-container').innerHTML = `<div class="p-20 text-center text-neutral-700 text-[10px] font-black uppercase tracking-[0.3em]">No comments detected</div>`;
                 }
-                lastDoc = snap.docs[snap.docs.length - 1];
-                snap.forEach(d => {
-                    document.getElementById('feed-container').innerHTML += createPostHTML(d.data());
-                });
-            } catch (e) { console.error(e); }
+                snap.forEach(d => document.getElementById('feed-container').innerHTML += createPostHTML(d.data()));
+            } catch (e) { showToast("Feed Encrypted", true); }
             isFeedLoading = false;
         }
 
         document.getElementById('post-btn').onclick = async () => {
             const input = document.getElementById('post-input');
             const txt = input.value.trim();
-            if (txt.length < 5) return showToast("Message too short", true);
+            if (txt.length < 10) return showToast("Min 10 characters", true);
             
             try {
                 const batch = writeBatch(db);
@@ -311,11 +288,11 @@
                     userPhoto: currentUser.photoURL, towerId: String(currentTowerId),
                     likes: 0, createdAt: serverTimestamp()
                 });
-                batch.update(doc(db, "users", currentUser.uid), { dailyCount: increment(1) });
+                batch.update(doc(db, "users", currentUser.uid), { dailyCount: increment(1), lastPost: serverTimestamp() });
                 await batch.commit();
                 input.value = "";
                 loadComments(true);
-            } catch (e) { showToast("Network Error", true); }
+            } catch (e) { showToast("Policy Violation / Limit", true); }
         };
 
         window.openProfile = async (uid) => {
@@ -323,14 +300,13 @@
             const frame = document.getElementById('profile-frame');
             frame.style.display = 'flex';
             setTimeout(() => frame.classList.add('active'), 10);
-            document.getElementById('profile-posts-list').innerHTML = generateSkeletonHTML(3);
             
-            // Logic to fill profile (Self vs Others) as requested
             const isMe = uid === currentUser.uid;
-            let pName = "Operator", pPhoto = "";
-            
+            document.getElementById('p-name').innerText = isMe ? currentUser.displayName : "External Operator";
+            document.getElementById('p-avatar').src = isMe ? currentUser.photoURL : "https://via.placeholder.com/100/111";
+            document.getElementById('p-uid').innerText = "ID_SRC_" + uid.slice(-8);
+
             if(isMe) {
-                pName = currentUser.displayName; pPhoto = currentUser.photoURL;
                 const uSnap = await getDoc(doc(db, "users", uid));
                 if(uSnap.exists()) {
                     document.getElementById('p-count').innerText = uSnap.data().dailyCount || 0;
@@ -338,59 +314,37 @@
                 }
             }
             
-            document.getElementById('p-name').innerText = pName;
-            document.getElementById('p-avatar').src = pPhoto || "https://via.placeholder.com/100/333";
-            document.getElementById('p-uid').innerText = "OP_ID_" + uid.slice(-6);
-
             const q = query(collection(db, "comments"), where("userId", "==", uid), orderBy("createdAt", "desc"), limit(10));
             const s = await getDocs(q);
-            document.getElementById('profile-posts-list').innerHTML = "";
+            document.getElementById('profile-posts-list').innerHTML = s.empty ? "" : "";
             s.forEach(d => document.getElementById('profile-posts-list').innerHTML += createPostHTML(d.data()));
         };
 
-        function generateSkeletonHTML(count) {
-            let h = '';
-            for(let i=0; i<count; i++) h += `<div class="p-6 border-b border-white/5 flex gap-4"><div class="skeleton w-10 h-10 rounded-full"></div><div class="flex-1 space-y-2"><div class="skeleton w-24 h-3"></div><div class="skeleton w-full h-3"></div></div></div>`;
-            return h;
-        }
-
         function createPostHTML(data) {
             return `
-            <div class="post-card flex gap-4">
-                <img src="${data.userPhoto}" class="w-10 h-10 rounded-full border border-white/10" onclick="openProfile('${data.userId}')">
+            <div class="p-6 border-b border-white/5 flex gap-5 active:bg-white/[0.02] transition">
+                <img src="${data.userPhoto}" class="w-11 h-11 rounded-full border border-white/10" onclick="openProfile('${data.userId}')">
                 <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="font-bold text-xs">${data.username}</span>
-                        <span class="text-[9px] text-neutral-600 font-mono italic">#${data.userId.slice(-4)}</span>
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-black text-xs italic uppercase tracking-tighter">${data.username}</span>
+                        <span class="text-[8px] text-neutral-600 font-mono">#${data.userId.slice(-4)}</span>
                     </div>
-                    <p class="text-sm text-neutral-200 leading-snug">${data.text}</p>
-                    <div class="mt-4 flex gap-6">
-                        <div class="flex items-center gap-1.5 text-neutral-600 active:text-purple-400 transition" onclick="showToast('Liked')">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                            <span class="text-[10px] font-bold">${data.likes || ''}</span>
-                        </div>
-                    </div>
+                    <p class="text-[13px] text-neutral-300 font-medium leading-relaxed">${data.text}</p>
                 </div>
             </div>`;
         }
 
-        window.closeFrame = (id) => {
-            const el = document.getElementById(id);
-            el.classList.remove('active');
-            setTimeout(() => el.style.display = 'none', 400);
-        };
-        window.openFrame = (id) => {
-            const el = document.getElementById(id);
-            el.style.display = 'flex';
-            setTimeout(() => el.classList.add('active'), 10);
-        };
-        window.locateMe = () => map.locate({setView: true, maxZoom: 16});
-        window.showReport = () => document.getElementById('report-modal').classList.remove('hidden');
-        function showToast(m, e=false) {
-            const t = document.getElementById('toast');
-            t.innerText = m; t.style.background = e ? '#ef4444' : '#111';
-            t.style.display = 'flex'; setTimeout(() => t.style.display = 'none', 3000);
+        function generateSkeletonHTML(c) {
+            let h = '';
+            for(let i=0; i<c; i++) h += `<div class="p-6 border-b border-white/5 flex gap-5"><div class="skeleton w-11 h-11 rounded-full"></div><div class="flex-1 space-y-3"><div class="skeleton w-24 h-3"></div><div class="skeleton w-full h-3"></div></div></div>`;
+            return h;
         }
+
+        window.closeFrame = (id) => { const el = document.getElementById(id); el.classList.remove('active'); setTimeout(() => el.style.display = 'none', 600); };
+        window.openFrame = (id) => { const el = document.getElementById(id); el.style.display = 'flex'; setTimeout(() => el.classList.add('active'), 10); };
+        window.locateMe = () => map.locate({setView: true, maxZoom: 17});
+        window.showReport = () => document.getElementById('report-modal').classList.remove('hidden');
+        function showToast(m, e=false) { const t = document.getElementById('toast'); t.innerText = m; t.style.border = e ? '1px solid #ef4444' : '1px solid #22c55e'; t.style.display = 'flex'; setTimeout(() => t.style.display = 'none', 3000); }
     </script>
 </body>
 </html>
