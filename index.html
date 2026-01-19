@@ -7,134 +7,164 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --accent: #8b5cf6; --x-gray: #71767b; --x-border: #2f3336; }
-        body { background: #000; color: white; font-family: -apple-system, system-ui, sans-serif; margin: 0; overflow: hidden; }
+        :root { --accent: #8b5cf6; --bg: #000; --border: #2f3336; --skeleton: #16181c; }
+        body { background: var(--bg); color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; overflow: hidden; }
         #map { height: 100vh; width: 100%; display: none; filter: contrast(1.1) brightness(0.8) saturate(0.8); }
-        
+
+        /* Loader Circular (Boot) */
         .loader { width: 40px; height: 40px; border: 3px solid #333; border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .tower-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 10px rgba(0,0,0,0.5); transition: opacity 0.3s; }
-        
-        .frame-overlay { position: fixed; inset: 0; background: #000; z-index: 50; display: none; flex-direction: column; }
-        .frame-content { flex: 1; overflow-y: auto; }
-        .frame-header { padding: 15px; border-bottom: 1px solid var(--x-border); display: flex; align-items: center; justify-content: space-between; background: #000; }
-        
-        /* Design Twitter/Frame exato */
-        .comment-item { padding: 12px 16px; border-bottom: 1px solid var(--x-border); display: flex; gap: 12px; }
-        .avatar { width: 42px; height: 42px; border-radius: 50%; background: #222; object-fit: cover; }
-        .comm-user { font-weight: bold; color: #fff; }
-        .comm-handle { color: var(--x-gray); font-size: 14px; }
-        .comm-text { font-size: 15px; color: #eff3f4; margin-top: 2px; line-height: 20px; }
-        .comm-footer { display: flex; gap: 20px; margin-top: 10px; color: var(--x-gray); font-size: 13px; }
+        /* Skeleton Loading */
+        .skeleton { background: var(--skeleton); border-radius: 4px; animation: pulse 1.5s infinite ease-in-out; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
-        #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); padding: 12px 20px; border-radius: 8px; display: none; z-index: 1000; font-weight: bold; align-items: center; gap: 8px; }
-        .hide { display: none !important; }
+        /* Animação iOS Slide Up */
+        .frame-overlay { 
+            position: fixed; inset: 0; background: #000; z-index: 50; 
+            display: flex; flex-direction: column; 
+            transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        .frame-overlay.active { transform: translateY(0); }
+
+        .frame-header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: #000; z-index: 10; }
+        .frame-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+        /* Feed Design */
+        .comment-item { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #222; object-fit: cover; cursor: pointer; }
+        .comm-user { font-weight: bold; color: #fff; font-size: 15px; }
+        .comm-meta { color: #71767b; font-size: 14px; margin-left: 4px; }
+        .comm-text { font-size: 15px; color: #eff3f4; margin-top: 2px; line-height: 1.4; white-space: pre-wrap; word-break: break-word; }
+        .comm-actions { display: flex; gap: 24px; margin-top: 10px; color: #71767b; font-size: 13px; align-items: center; }
+        
+        .action-btn { display: flex; align-items: center; gap: 6px; cursor: pointer; transition: color 0.2s; }
+        .action-btn:hover { color: var(--accent); }
+        .action-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+        /* Icones SVG */
+        .icon { width: 20px; height: 20px; fill: white; }
+        .icon-red { fill: #ef4444; }
+        .icon-gray { fill: #71767b; }
+
+        #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 30px; display: none; z-index: 1000; font-weight: 600; align-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
     <div id="boot-screen" class="fixed inset-0 flex flex-col items-center justify-center bg-black z-[100]">
         <div id="boot-loader" class="loader"></div>
-        <div id="boot-status" class="text-gray-500 font-mono text-[10px] mt-4 uppercase tracking-widest">Connect: Tower Server...</div>
+        <div id="boot-status" class="text-gray-500 font-mono text-[10px] mt-4 uppercase tracking-widest">CONNECTING SERVER...</div>
         <div id="boot-error" class="text-red-600 font-mono text-sm mt-4 hidden text-center px-10"></div>
     </div>
 
     <div id="login-screen" class="fixed inset-0 bg-black z-[90] hidden p-8 flex flex-col justify-between">
         <div class="mt-20">
-            <h1 class="text-2xl font-bold leading-tight">Welcome to the tower radar.<br><span class="text-gray-400">Log in so you can use our radar.</span></h1>
+            <h1 class="text-3xl font-bold leading-tight tracking-tight">Tower Radar<br><span class="text-gray-500 text-xl font-normal">Log in to access the network.</span></h1>
         </div>
-        <div class="space-y-4 mb-10">
-            <button id="btn-google" class="w-full bg-white text-black font-bold py-3 rounded-full flex items-center justify-center gap-2">Continue with Google</button>
-            <button id="btn-email" class="w-full border border-gray-700 text-white font-bold py-3 rounded-full">Continue with email</button>
+        <div class="mb-6 w-full">
+            <div class="space-y-4 mb-8">
+                <button id="btn-google" class="w-full bg-white text-black font-bold py-3.5 rounded-full flex items-center justify-center gap-3 transition active:scale-95">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z"/></svg>
+                    Continue with Google
+                </button>
+            </div>
             <div class="pt-6 border-t border-white/10 text-center">
-                <p class="text-white/40 text-[11px]">By continuing, you agree to our <a href="https://docs.google.com/document/d/1_lzg_dL1Koatp5SkTv2lqapObPT09RmwZiM_13e_o4s/edit?usp=drivesdk" target="_blank" class="text-white underline">terms of service and rules</a>.</p>
+                <p class="text-white/40 text-[11px]">By continuing, you agree to our <a href="https://docs.google.com/document/d/1_lzg_dL1Koatp5SkTv2lqapObPT09RmwZiM_13e_o4s/edit?usp=drivesdk" target="_blank" class="text-white underline hover:text-purple-400">terms of service and rules</a>.</p>
             </div>
         </div>
     </div>
 
     <div id="map"></div>
     <div id="map-ui" class="hidden">
-        <button onclick="openFrame('settings-frame')" class="fixed top-5 right-5 z-20 bg-black/50 p-3 rounded-full border border-white/10 backdrop-blur-md">
-            <svg class="w-6 h-6 fill-white" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        <button onclick="openFrame('settings-frame')" class="fixed top-5 right-5 z-20 bg-black/60 p-3 rounded-full border border-white/10 backdrop-blur-md active:scale-90 transition">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
         </button>
-        <button onclick="locateMe()" class="fixed bottom-10 right-5 z-20 bg-purple-600 p-4 rounded-2xl shadow-lg">
-            <svg class="w-6 h-6 fill-white" viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+        <button onclick="locateMe()" class="fixed bottom-10 right-5 z-20 bg-purple-600 p-4 rounded-2xl shadow-lg active:scale-90 transition">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
         </button>
     </div>
 
     <div id="settings-frame" class="frame-overlay">
         <div class="frame-header">
-            <button onclick="closeFrame('settings-frame')"><svg class="w-6 h-6 fill-white" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
-            <h2 class="font-bold">Settings</h2>
-            <div class="w-10"></div>
+            <button onclick="closeFrame('settings-frame')"><svg class="icon" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+            <h2 class="font-bold text-lg">Settings</h2>
+            <div class="w-6"></div>
         </div>
         <div class="frame-content px-4 py-4 space-y-4">
-            <button onclick="openProfile()" class="w-full p-4 flex items-center justify-between bg-white/5 rounded-xl border border-white/5">
-                <span>About the profile</span>
-                <svg class="w-4 h-4 fill-gray-500" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+            <button onclick="openProfile(currentUserUid)" class="w-full p-4 flex items-center justify-between bg-[#16181c] rounded-xl border border-white/5 active:bg-white/10">
+                <span class="font-medium">My Profile</span>
+                <svg class="icon-gray w-5 h-5" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
             </button>
-            <div class="p-4 flex items-center justify-between border-b border-white/5">
-                <span>Display Mode</span>
-                <select id="theme-selector" onchange="changeTheme()" class="bg-black border border-gray-700 rounded p-1">
-                    <option value="dark">Dark</option>
-                    <option value="light">Light</option>
-                </select>
-            </div>
-            <a href="https://docs.google.com/document/d/1_lzg_dL1Koatp5SkTv2lqapObPT09RmwZiM_13e_o4s/edit?usp=drivesdk" target="_blank" class="block p-4 text-gray-500 text-sm mt-10">Terms of service and rules</a>
+            <a href="https://docs.google.com/document/d/1_lzg_dL1Koatp5SkTv2lqapObPT09RmwZiM_13e_o4s/edit?usp=drivesdk" target="_blank" class="block w-full text-left p-4 text-sm text-gray-500 hover:text-white transition">Terms of Service and Rules</a>
         </div>
     </div>
 
     <div id="profile-frame" class="frame-overlay z-[60]">
-        <div id="profile-loader" class="absolute inset-0 bg-black flex items-center justify-center z-10 hidden"><div class="loader"></div></div>
-        <div id="profile-notfound" class="absolute inset-0 bg-black flex items-center justify-center z-10 hidden text-xl font-bold">Not found.</div>
         <div class="frame-header">
-            <button onclick="closeFrame('profile-frame')"><svg class="w-6 h-6 fill-white" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+            <button onclick="closeFrame('profile-frame')"><svg class="icon" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
             <h2 class="font-bold">Profile</h2>
-            <button onclick="showReport()"><svg class="w-6 h-6 fill-red-500" viewBox="0 0 24 24"><path d="M15.73 3H8.27L3 8.27v7.46L8.27 21h7.46L21 15.73V8.27L15.73 3zM12 17.3c-.72 0-1.3-.58-1.3-1.3 0-.72.58-1.3 1.3-1.3.72 0 1.3.58 1.3 1.3 0 .72-.58 1.3-1.3 1.3zm1-4.3h-2V7h2v6z"/></svg></button>
+            <button onclick="showReport()"><svg class="icon-red w-6 h-6" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg></button>
         </div>
-        <div class="frame-content px-4" id="profile-data">
-            <div class="flex items-center gap-4 py-6">
-                <img id="user-pfp" class="w-20 h-20 rounded-full bg-gray-900 border border-white/10">
+        
+        <div id="profile-loading-state" class="absolute inset-0 top-[53px] bg-black z-10 hidden flex flex-col items-center justify-center gap-4">
+            <div class="loader"></div>
+        </div>
+        <div id="profile-error-state" class="absolute inset-0 top-[53px] bg-black z-10 hidden flex flex-col items-center justify-center p-6 text-center">
+            <h2 class="text-xl font-bold mb-2">User not found</h2>
+            <p class="text-gray-500 text-sm">This account may have been banned or deleted.</p>
+        </div>
+
+        <div class="frame-content px-4" id="profile-content">
+            <div class="flex items-center gap-4 py-6 border-b border-white/10">
+                <img id="p-avatar" class="w-20 h-20 rounded-full bg-gray-800 border-2 border-black">
                 <div>
-                    <h3 id="user-name" class="text-xl font-bold"></h3>
-                    <p id="user-email" class="text-gray-500 text-sm"></p>
+                    <h3 id="p-name" class="text-xl font-bold"></h3>
+                    <p id="p-email" class="text-gray-500 text-sm"></p>
                 </div>
             </div>
-            <div class="flex gap-10 border-y border-white/10 py-4">
-                <div><span id="user-likes" class="font-bold">0</span> <span class="text-gray-500">Likes</span></div>
-                <div><span id="user-comms-count" class="font-bold">0</span> <span class="text-gray-500">Comments</span></div>
+            <div class="flex gap-8 py-4 border-b border-white/10">
+                <div><span id="p-likes" class="font-bold text-lg">0</span> <span class="text-gray-500 text-sm">Likes</span></div>
+                <div><span id="p-posts" class="font-bold text-lg">0</span> <span class="text-gray-500 text-sm">Comments</span></div>
             </div>
-            <div id="user-posts" class="mt-4"></div>
+            <div id="profile-posts-list" class="mt-2 pb-10"></div>
         </div>
     </div>
 
     <div id="tower-frame" class="frame-overlay z-[70]">
         <div class="frame-header">
-            <button onclick="closeFrame('tower-frame')"><svg class="w-6 h-6 fill-white" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
-            <h2 id="tower-title" class="font-bold text-sm">Tower</h2>
-            <div class="w-10"></div>
+            <button onclick="closeFrame('tower-frame')"><svg class="icon" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+            <h2 id="tower-header-title" class="font-bold text-sm">Tower Feed</h2>
+            <div class="w-6"></div>
         </div>
-        <div class="frame-content" id="tower-comments-list"></div>
-        <div class="p-4 border-t border-white/10 flex gap-2 bg-black">
-            <input id="input-post" type="text" placeholder="Post a signal report..." class="flex-1 bg-transparent outline-none">
-            <button id="btn-post" class="bg-purple-600 px-6 py-2 rounded-full font-bold">Post</button>
+        
+        <div class="frame-content" id="feed-container"></div>
+
+        <div class="p-3 border-t border-white/10 bg-black flex gap-3 items-center pb-6">
+            <input id="post-input" type="text" placeholder="Post your signal report..." class="flex-1 bg-[#16181c] text-white px-4 py-3 rounded-full outline-none border border-transparent focus:border-purple-500 transition placeholder-gray-600">
+            <button id="post-btn" class="bg-purple-600 p-3 rounded-full flex items-center justify-center disabled:opacity-50">
+                <svg class="w-5 h-5 fill-white transform translate-x-[-1px] translate-y-[1px]" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
         </div>
     </div>
 
-    <div id="report-modal" class="fixed inset-0 bg-black/90 z-[200] hidden flex items-center justify-center p-6">
-        <div class="bg-[#16181c] p-6 rounded-2xl text-center border border-white/10">
-            <p class="mb-6 text-sm">To report this profile, you need proof and you need to go to the TikTok profile called fmafioso and talk to him.</p>
-            <button onclick="document.getElementById('report-modal').classList.add('hidden')" class="w-full bg-purple-600 py-3 rounded-xl font-bold">Close</button>
+    <div id="report-modal" class="fixed inset-0 bg-black/80 z-[200] hidden flex items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-[#16181c] p-6 rounded-2xl text-center border border-white/10 max-w-xs w-full">
+            <div class="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6 fill-red-500" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Report Profile</h3>
+            <p class="mb-6 text-sm text-gray-400 leading-relaxed">To report this user, please send proof to the TikTok account <b>@fmafioso</b>.</p>
+            <button onclick="document.getElementById('report-modal').classList.add('hidden')" class="w-full bg-white text-black py-3 rounded-full font-bold hover:bg-gray-200">Close</button>
         </div>
     </div>
 
     <div id="toast"></div>
-                                                      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit, serverTimestamp, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, query, where, getDocs, orderBy, limit, startAfter, serverTimestamp, doc, getDoc, setDoc, updateDoc, increment, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD-9mGZUB4m_vuc8mAATPtpiQdinb4nYx0",
@@ -148,152 +178,309 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        let userData = null;
-        let map, markersLayer, currentTowerId;
+        
+        let map, markersLayer;
+        let currentUser = null;
+        window.currentUserUid = null;
+        
+        // Feed Variables
+        let currentTowerId = null;
+        let lastDoc = null;
+        let isFeedLoading = false;
+        let feedFinished = false;
 
         // 1. BOOT
         window.onload = () => {
-            onAuthStateChanged(auth, user => {
-                setTimeout(() => {
-                    document.getElementById('boot-screen').classList.add('hide');
-                    if (user) { userData = user; initApp(); } 
-                    else { document.getElementById('login-screen').classList.remove('hidden'); }
-                }, 2000);
-            }, (err) => {
-                document.getElementById('boot-loader').classList.add('hide');
-                const errDiv = document.getElementById('boot-error');
-                errDiv.innerText = `DATABASE_ERROR: ${err.code}`;
-                errDiv.classList.remove('hidden');
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    window.currentUserUid = user.uid;
+                    await ensureUserDoc(user); // Critical for security rules
+                    document.getElementById('boot-screen').classList.add('hidden');
+                    initMap();
+                } else {
+                    document.getElementById('boot-screen').classList.add('hidden');
+                    document.getElementById('login-screen').classList.remove('hidden');
+                }
             });
         };
 
-        // 2. AUTH
-        document.getElementById('btn-google').onclick = async () => {
-            try { await signInWithPopup(auth, new GoogleAuthProvider()); notify("Success!", "#22c55e", "✓"); } 
-            catch { notify("Login Error", "#ef4444", "✕"); }
-        };
-
-        // 3. MAPA
-        function initApp() {
-            document.getElementById('map').style.display = 'block';
-            document.getElementById('map-ui').classList.remove('hidden');
-            map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-23.55, -46.63], 15);
-            const theme = localStorage.getItem('theme') || 'dark';
-            const tiles = theme === 'dark' ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-            L.tileLayer(tiles).addTo(map);
-            markersLayer = L.layerGroup().addTo(map);
-            map.on('moveend', renderTowers);
-            renderTowers();
+        async function ensureUserDoc(user) {
+            const userRef = doc(db, "users", user.uid);
+            const snap = await getDoc(userRef);
+            if (!snap.exists()) {
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    dailyCount: 0,
+                    totalLikes: 0,
+                    createdAt: serverTimestamp()
+                });
+            }
         }
 
-        async function renderTowers() {
-            if (map.getZoom() < 14) { markersLayer.clearLayers(); return; }
+        // 2. AUTH
+        document.getElementById('btn-google').onclick = async () => {
+            try {
+                await signInWithPopup(auth, new GoogleAuthProvider());
+            } catch (error) {
+                showToast("Auth Error: " + error.code, true);
+            }
+        };
+
+        // 3. MAP
+        function initMap() {
+            document.getElementById('map').style.display = 'block';
+            document.getElementById('map-ui').classList.remove('hidden');
+            
+            map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-23.55, -46.63], 15);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+            markersLayer = L.layerGroup().addTo(map);
+            
+            map.on('moveend', fetchTowers);
+            fetchTowers();
+        }
+
+        async function fetchTowers() {
+            if (map.getZoom() < 14) return;
             const b = map.getBounds();
             const q = `[out:json][timeout:15];(node["man_made"~"mast|tower"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}););out body;`;
+            
             try {
                 const res = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(q));
                 const data = await res.json();
                 markersLayer.clearLayers();
-                data.elements.forEach(el => {
-                    const style = getTowerStyle(el.tags);
-                    const icon = L.divIcon({ html: `<div class="tower-dot" style="background:${style.color}"></div>`, className: '', iconSize: [12,12] });
-                    const m = L.marker([el.lat, el.lon], {icon}).addTo(markersLayer);
-                    m.bindPopup(`<div class="leaf-popup"><b class="text-sm">${style.type}</b><br><span class="text-[10px] text-gray-500">ID: ${el.id}</span><br><button onclick="window.openTower('${el.id}')" class="w-full bg-purple-600 mt-2 text-xs py-1 rounded-lg font-bold">Comments</button></div>`);
+                data.elements.forEach(t => {
+                    const icon = L.divIcon({ html: `<div style="width:12px;height:12px;background:#8b5cf6;border:2px solid white;border-radius:50%;box-shadow:0 0 10px rgba(139,92,246,0.5)"></div>`, className: '' });
+                    const m = L.marker([t.lat, t.lon], {icon}).addTo(markersLayer);
+                    m.on('click', () => window.openTower(t.id));
                 });
-            } catch(e) {}
+            } catch (e) { console.error(e); }
         }
 
-        function getTowerStyle(tags) {
-            const t = JSON.stringify(tags || "").toLowerCase();
-            if (t.includes("5g") || t.includes("4g") || t.includes("lte")) return { color: '#22c55e', type: 'Mobile Data' };
-            if (t.includes("tv") || t.includes("broadcast")) return { color: '#8b5cf6', type: 'TV Tower' };
-            return { color: '#6b7280', type: 'Unknown Tower' };
-        }
-
-        // 4. FEED & POSTS
+        // 4. FEED (Skeleton + Pagination + No Emojis)
         window.openTower = (id) => {
             currentTowerId = id;
-            document.getElementById('tower-title').innerText = `Tower #${id}`;
-            document.getElementById('tower-frame').style.display = 'flex';
-            loadFeed(id);
-        };
-
-        async function loadFeed(id) {
-            const list = document.getElementById('tower-comments-list');
-            list.innerHTML = `<div class="p-10 flex justify-center"><div class="loader"></div></div>`;
-            const q = query(collection(db, "comments"), where("towerId", "==", id), orderBy("createdAt", "desc"), limit(15));
-            const snap = await getDocs(q);
-            list.innerHTML = snap.empty ? `<p class="p-10 text-center text-gray-500 text-sm">Be the first to post about this tower.</p>` : "";
-            snap.forEach(d => list.innerHTML += renderComment(d.data()));
-        }
-
-        function renderComment(d) {
-            return `<div class="comment-item">
-                <img src="${d.userPhoto}" class="avatar">
-                <div class="flex-1">
-                    <div class="flex items-center gap-1"><span class="comm-user">${d.username}</span><span class="comm-handle">· ${new Date(d.createdAt?.toDate()).toLocaleDateString()}</span></div>
-                    <div class="comm-text">${d.text}</div>
-                    <div class="comm-footer"><span>❤️ ${d.likes}</span><span onclick="window.showReport()">🚩 Report</span></div>
-                </div>
-            </div>`;
-        }
-
-        document.getElementById('btn-post').onclick = async () => {
-            const val = document.getElementById('input-post').value;
-            if (val.length < 10) { notify("Min 10 characters", "#ef4444", "✕"); return; }
-            try {
-                await addDoc(collection(db, "comments"), {
-                    text: val, userId: userData.uid, towerId: currentTowerId,
-                    username: userData.displayName, userPhoto: userData.photoURL,
-                    createdAt: serverTimestamp(), likes: 0
-                });
-                document.getElementById('input-post').value = "";
-                loadFeed(currentTowerId);
-                notify("Post shared!", "#8b5cf6", "✓");
-            } catch (e) { notify("Rule Blocked / Ban", "#ef4444", "✕"); }
-        };
-
-        // 5. PROFILE & BAN CHECK
-        window.openProfile = async () => {
-            const frame = document.getElementById('profile-frame');
-            const loader = document.getElementById('profile-loader');
-            const dataView = document.getElementById('profile-data');
-            const nf = document.getElementById('profile-notfound');
-            
+            document.getElementById('tower-header-title').innerText = `Tower #${id}`;
+            const frame = document.getElementById('tower-frame');
+            frame.classList.add('active'); // Slide up animation
             frame.style.display = 'flex';
-            loader.classList.remove('hidden');
-            dataView.classList.add('hide');
-            nf.classList.add('hidden');
+            
+            // Reset Feed
+            const container = document.getElementById('feed-container');
+            container.innerHTML = generateSkeletonHTML(); // Shows 15 skeletons
+            lastDoc = null;
+            feedFinished = false;
+            
+            loadComments(true);
 
-            const snap = await getDoc(doc(db, "users", userData.uid));
-            const data = snap.data();
-
-            setTimeout(async () => {
-                loader.classList.add('hidden');
-                if (data?.banUntil && data.banUntil.toDate() > new Date()) { nf.classList.remove('hidden'); } 
-                else {
-                    document.getElementById('user-name').innerText = userData.displayName;
-                    document.getElementById('user-email').innerText = userData.email;
-                    document.getElementById('user-pfp').src = userData.photoURL;
-                    document.getElementById('user-likes').innerText = data?.totalLikes || 0;
-                    document.getElementById('user-comms-count').innerText = data?.dailyCount || 0;
-                    dataView.classList.remove('hide');
+            // Infinite Scroll
+            container.onscroll = () => {
+                if (container.scrollTop + container.clientHeight >= container.scrollHeight - 50) {
+                    loadComments(false);
                 }
-            }, 1200);
+            };
         };
 
-        // HELPERS
-        window.openFrame = (id) => document.getElementById(id).style.display = 'flex';
-        window.closeFrame = (id) => document.getElementById(id).style.display = 'none';
+        async function loadComments(isReset) {
+            if (isFeedLoading || feedFinished) return;
+            isFeedLoading = true;
+
+            try {
+                let q = query(
+                    collection(db, "comments"), 
+                    where("towerId", "==", String(currentTowerId)), 
+                    orderBy("createdAt", "desc"), 
+                    limit(15)
+                );
+
+                if (lastDoc && !isReset) {
+                    q = query(q, startAfter(lastDoc));
+                }
+
+                const snap = await getDocs(q);
+                const container = document.getElementById('feed-container');
+                
+                if (isReset) container.innerHTML = ""; // Clear Skeleton
+
+                if (snap.empty) {
+                    feedFinished = true;
+                    if (isReset) container.innerHTML = `<div class="p-10 text-center text-gray-500 text-sm mt-10">No comment for now.</div>`;
+                    isFeedLoading = false;
+                    return;
+                }
+
+                lastDoc = snap.docs[snap.docs.length - 1];
+                
+                snap.forEach(doc => {
+                    container.innerHTML += createCommentHTML(doc.data());
+                });
+
+            } catch (e) {
+                document.getElementById('feed-container').innerHTML = `<div class="p-6 text-center text-red-500 font-mono text-xs">Error: ${e.message}<br>Index needed?</div>`;
+            }
+            isFeedLoading = false;
+        }
+
+        // 5. POST (Batch Write to fix Rule Blocked)
+        document.getElementById('post-btn').onclick = async () => {
+            const input = document.getElementById('post-input');
+            const txt = input.value.trim();
+            if (txt.length < 5) { showToast("Message too short", true); return; }
+
+            input.disabled = true;
+
+            try {
+                const batch = writeBatch(db);
+                
+                // 1. Create Comment
+                const commentRef = doc(collection(db, "comments"));
+                batch.set(commentRef, {
+                    text: txt,
+                    userId: currentUser.uid,
+                    username: currentUser.displayName,
+                    userPhoto: currentUser.photoURL,
+                    towerId: String(currentTowerId),
+                    likes: 0,
+                    createdAt: serverTimestamp()
+                });
+
+                // 2. Update User Counter (REQUIRED BY RULES)
+                const userRef = doc(db, "users", currentUser.uid);
+                batch.update(userRef, {
+                    dailyCount: increment(1),
+                    lastPost: serverTimestamp()
+                });
+
+                await batch.commit();
+
+                input.value = "";
+                loadComments(true); // Reload feed
+                showToast("Sent successfully");
+
+            } catch (e) {
+                showToast("Blocked: " + e.code, true);
+            }
+            input.disabled = false;
+        };
+
+        // 6. PROFILE
+        window.openProfile = async (uid) => {
+            const frame = document.getElementById('profile-frame');
+            const loader = document.getElementById('profile-loading-state');
+            const errorView = document.getElementById('profile-error-state');
+            const content = document.getElementById('profile-content');
+
+            frame.style.display = 'flex';
+            setTimeout(() => frame.classList.add('active'), 10);
+
+            loader.classList.remove('hidden');
+            errorView.classList.add('hidden');
+            content.classList.add('hidden');
+
+            try {
+                const docSnap = await getDoc(doc(db, "users", uid));
+                if (!docSnap.exists() || (docSnap.data().banUntil && docSnap.data().banUntil.toDate() > new Date())) {
+                    loader.classList.add('hidden');
+                    errorView.classList.remove('hidden');
+                    return;
+                }
+
+                const data = docSnap.data();
+                document.getElementById('p-name').innerText = data.displayName;
+                document.getElementById('p-email').innerText = data.email;
+                document.getElementById('p-avatar').src = data.photoURL;
+                document.getElementById('p-likes').innerText = data.totalLikes || 0;
+                document.getElementById('p-posts').innerText = data.dailyCount || 0;
+
+                // Load User Posts
+                const postsList = document.getElementById('profile-posts-list');
+                postsList.innerHTML = '<div class="mt-4 space-y-2">' + generateSkeletonHTML(3) + '</div>'; // Mini skeleton
+                
+                const q = query(collection(db, "comments"), where("userId", "==", uid), orderBy("createdAt", "desc"), limit(5));
+                const pSnap = await getDocs(q);
+                
+                postsList.innerHTML = "";
+                if (pSnap.empty) {
+                    postsList.innerHTML = `<div class="text-center text-gray-500 py-6 text-sm">This user has not commented yet.</div>`;
+                } else {
+                    pSnap.forEach(d => postsList.innerHTML += createCommentHTML(d.data(), false));
+                }
+
+                loader.classList.add('hidden');
+                content.classList.remove('hidden');
+
+            } catch (e) {
+                loader.classList.add('hidden');
+                errorView.innerHTML = `<p class="text-red-500">Error: ${e.code}</p>`;
+                errorView.classList.remove('hidden');
+            }
+        };
+
+        // UI HELPERS
+        window.closeFrame = (id) => {
+            const el = document.getElementById(id);
+            el.classList.remove('active');
+            setTimeout(() => el.style.display = 'none', 350);
+        };
+        
         window.showReport = () => document.getElementById('report-modal').classList.remove('hidden');
         window.locateMe = () => map.locate({setView: true, maxZoom: 16});
-        window.changeTheme = () => { localStorage.setItem('theme', document.getElementById('theme-selector').value); location.reload(); };
-        
-        function notify(msg, bg, icon) {
+
+        function showToast(msg, isError = false) {
             const t = document.getElementById('toast');
-            t.innerHTML = `<span>${icon}</span> ${msg}`;
-            t.style.background = bg; t.style.display = 'flex';
+            const icon = isError 
+                ? `<svg class="w-5 h-5 fill-white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`
+                : `<svg class="w-5 h-5 fill-white" viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>`;
+            
+            t.innerHTML = `${icon} <span>${msg}</span>`;
+            t.style.background = isError ? '#ef4444' : '#22c55e';
+            t.style.display = 'flex';
             setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+        // HTML GENERATORS
+        function generateSkeletonHTML(count = 15) {
+            let html = '';
+            for(let i=0; i<count; i++) {
+                html += `
+                <div class="padding: 12px 16px; border-bottom: 1px solid #2f3336; display: flex; gap: 12px;">
+                    <div class="skeleton" style="width:40px; height:40px; border-radius:50%"></div>
+                    <div style="flex:1">
+                        <div class="skeleton" style="width:100px; height:14px; margin-bottom:6px"></div>
+                        <div class="skeleton" style="width:90%; height:14px; margin-bottom:4px"></div>
+                        <div class="skeleton" style="width:60%; height:14px;"></div>
+                    </div>
+                </div>`;
+            }
+            return html;
+        }
+
+        function createCommentHTML(data, showBorder = true) {
+            const date = data.createdAt ? new Date(data.createdAt.toDate()).toLocaleDateString() : 'Now';
+            const borderClass = showBorder ? 'border-b border-[#2f3336]' : '';
+            return `
+            <div class="flex gap-3 px-4 py-3 ${borderClass}">
+                <img src="${data.userPhoto}" class="avatar" onclick="openProfile('${data.userId}')">
+                <div class="flex-1">
+                    <div class="flex items-center">
+                        <span class="comm-user">${data.username}</span>
+                        <span class="comm-meta">· ${date}</span>
+                    </div>
+                    <p class="comm-text">${data.text}</p>
+                    <div class="comm-actions">
+                        <div class="action-btn">
+                            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                            <span>${data.likes || 0}</span>
+                        </div>
+                        <div class="action-btn" onclick="showReport()">
+                            <svg viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
         }
     </script>
 </body>
